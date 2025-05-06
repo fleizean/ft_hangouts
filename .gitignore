@@ -1,0 +1,54 @@
+# Xcode
+#
+## User settings
+xcuserdata/
+*.xcuserstate
+
+## Obj-C/Swift specific
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+#
+.build/
+.swiftpm/
+
+# CocoaPods
+#
+Pods/
+*.xcworkspace
+
+# Carthage
+#
+Carthage/Build/
+
+# Mac OS X
+#
+.DS_Store
+.AppleDouble
+.LSOverride
+.Trashes
+
+# Icon must end with two \r
+Icon
+
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
