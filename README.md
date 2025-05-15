@@ -1,7 +1,7 @@
 # ft_hangouts
 
 ## Overview
-ft_hangouts is a mobile application developed with Swift, replicating basic messaging functionality similar to popular messaging services. This project is part of the 42 curriculum, designed to explore mobile development concepts using Swift programming language and iOS frameworks.
+ft_hangouts is a mobile application developed with Kotlin, replicating basic messaging functionality similar to popular messaging services. This project is part of the 42 curriculum, designed to explore mobile development concepts using Kotlin programming language and Android frameworks.
 
 ## Features
 - **Contact Management**: Create, edit, and delete contacts with their name, phone number, and optional photo
@@ -12,23 +12,20 @@ ft_hangouts is a mobile application developed with Swift, replicating basic mess
 - **Data Persistence**: Contacts and messages are stored locally
 
 ## Technical Specifications
-- **Language**: Swift
+- **Language**: Kotlin
 - **Database**: SQLite/Core Data
-- **UI Framework**: UIKit
-- **Target Platform**: iOS
-- **Design Pattern**: MVC (Model-View-Controller)
+- **Target Platform**: Android
 
 ## Installation & Usage
 1. Clone this repository
 ```bash
 git clone https://github.com/fleizean/ft_hangouts.git
 ```
-2. Open the project in Xcode
+2. Open the project in Android Studio
 ```bash
 cd ft_hangouts
-open ft_hangouts.xcodeproj
 ```
-3. Build and run the application in the iOS Simulator or on a physical device
+3. Build and run the application in the Android Emulator or on a physical device
 
 ## Screenshots
 [Screenshots will be added here]
