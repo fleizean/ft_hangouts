@@ -29,4 +29,9 @@ cd ft_hangouts
 3. Build and run the application in the Android Emulator or on a physical device
 
 ## Screenshots
-[Screenshots will be added here]
+
+<div align="center">
+    <img src="images/ana_sayfa.png" alt="Home Screen" width="250"/>
+    <img src="images/detay.png" alt="Contact Detail" width="250"/>
+    <img src="images/kisi-ekle.png" alt="Add Contact" width="250"/>
+</div>
