@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">ft_hangouts</string>
+    <string name="add_contact">Kişi Ekle</string>
+    <string name="edit_contact">Kişiyi Düzenle</string>
+    <string name="contact_details">Kişi Detayları</string>
+    <string name="name">İsim</string>
+    <string name="phone">Telefon</string>
+    <string name="email">E-posta</string>
+    <string name="address">Adres</string>
+    <string name="notes">Notlar</string>
+    <string name="message">Mesaj</string>
+    <string name="send">Gönder</string>
+    <string name="cancel">İptal</string>
+    <string name="delete">Sil</string>
+    <string name="delete_contact">Kişiyi Sil</string>
+    <string name="delete_contact_confirmation">Bu kişiyi silmek istediğinizden emin misiniz?</string>
+    <string name="yes">Evet</string>
+    <string name="no">Hayır</string>
+    <string name="contact_added">Kişi başarıyla eklendi!</string>
+    <string name="contact_updated">Kişi başarıyla güncellendi!</string>
+    <string name="contact_deleted">Kişi başarıyla silindi!</string>
+    <string name="error">Hata</string>
+    <string name="contact_not_found">Kişi bulunamadı!</string>
+    <string name="empty_fields">Lütfen tüm alanları doldurun!</string>
+    <string name="invalid_email">Geçersiz e-posta adresi!</string>
+    <string name="invalid_phone">Geçersiz telefon numarası!</string>
+    <string name="invalid_name">Geçersiz isim!</string>
+    <string name="invalid_address">Geçersiz adres!</string>
+    <string name="invalid_notes">Geçersiz notlar!</string>
+    <string name="message_sent">Mesaj başarıyla gönderildi!</string>
+    <string name="message_failed">Mesaj gönderilemedi!</string>
+    <string name="message_empty">Mesaj boş olamaz!</string>
+    <string name="message_error">Mesaj gönderilirken bir hata oluştu!</string>
+    <string name="message_not_found">Mesaj bulunamadı!</string>
+   
+    <!-- Added strings from provided files -->
+    <string name="change_toolbar_color">Araç Çubuğu Rengini Değiştir</string>
+    <string name="add_new_contact">Yeni Kişi Ekle</string>
+    <string name="my_contacts">Kişilerim</string>
+    <string name="save">Kaydet</string>
+    <string name="name_cannot_be_empty">İsim boş olamaz</string>
+    <string name="contact_added_success">Kişi eklendi</string>
+    <string name="contact_details_title">Kişi Detayları</string>
+    <string name="contact_not_found_message">Kişi bulunamadı.</string>
+    <string name="message_button">Mesaj</string>
+    <string name="delete_contact_button">Kişiyi Sil</string>
+    <string name="delete_confirmation_title">Kişiyi Sil</string>
+    <string name="delete_confirmation_message">Bu kişiyi silmek istediğinizden emin misiniz?</string>
+    <string name="delete_success">Kişi silindi</string>
+    <string name="delete_failure">Silme işlemi başarısız oldu</string>
+    <string name="add_contact_title">Kişi Ekle</string>
+    <string name="color_purple">Mor</string>
+    <string name="color_blue">Mavi</string>
+    <string name="color_green">Yeşil</string>
+    <string name="color_red">Kırmızı</string>
+    <string name="last_background">Son arkaplanda kalma zamanı</string>
+</resources>

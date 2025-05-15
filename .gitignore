@@ -1,54 +1,37 @@
-# Xcode
-#
-## User settings
-xcuserdata/
-*.xcuserstate
+# Android Studio / IntelliJ IDEA
+.idea/
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.gradle/
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+/build
+/captures
+.externalNativeBuild
+.cxx
 
-## Obj-C/Swift specific
-*.hmap
-*.ipa
-*.dSYM.zip
-*.dSYM
+# Kotlin specific
+*.kotlin_module
+*.kotlin_metadata
+*.kotlin_builtins
 
-# Swift Package Manager
-#
-.build/
-.swiftpm/
+# Android specific
+*.apk
+*.aab
+*.ap_
+*.jks
+*.keystore
+output.json
 
-# CocoaPods
-#
-Pods/
-*.xcworkspace
-
-# Carthage
-#
-Carthage/Build/
-
-# Mac OS X
-#
-.DS_Store
-.AppleDouble
-.LSOverride
-.Trashes
-
-# Icon must end with two \r
-Icon
-
-
-# Thumbnails
-._*
-
-# Files that might appear in the root of a volume
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
+# Gradle files
+.gradle/
+build/
