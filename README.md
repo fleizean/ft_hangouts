@@ -1,4 +1,5 @@
 # ft_hangouts
+#### Score: 125/125
 
 ## Overview
 ft_hangouts is a mobile application developed with Kotlin, replicating basic messaging functionality similar to popular messaging services. This project is part of the 42 curriculum, designed to explore mobile development concepts using Kotlin programming language and Android frameworks.
