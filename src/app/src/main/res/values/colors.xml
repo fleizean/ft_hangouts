@@ -14,6 +14,15 @@
     <color name="toolbar_orange">#FF9800</color>
     <color name="toolbar_teal">#009688</color>
 
+    <color name="primary_color">#FF6200EE</color>
+    <color name="primary_light">#FFBB86FC</color>
+    <color name="background_color">#F5F5F5</color>
+
+    <color name="message_button_color">#2196F3</color> <!-- Mavi -->
+    <color name="call_button_color">#4CAF50</color> <!-- Yeşil -->
+    <color name="edit_button_color">#FFC107</color> <!-- Amber -->
+    <color name="delete_button_color">#F44336</color> <!-- Kırmızı -->
+
     
     <!-- Bu renkleri ekleyin (Modern isimlendirmeye geçiş için) -->
     <color name="colorPrimary">@color/purple_500</color>

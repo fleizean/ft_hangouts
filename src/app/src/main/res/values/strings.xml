@@ -55,7 +55,81 @@
     <string name="color_red">Red</string>
     <string name="last_background">Last time in background</string>
     <string name="pick_from_gallery">Pick from Gallery</string>
+    <string name="start_simulation">Start Message Simulation</string>
+    <string name="stop_simulation">Stop Message Simulation</string>
+    <string name="simulation_started">Random message simulation started. First message will arrive in %1$d seconds.</string>
+    <string name="simulation_stopped">Random message simulation stopped.</string>
+    <string name="auto_created">Automatically created: </string>
+    <string name="new_message_received">You received a new message from %1$s.</string>
+    <string name="notification_title">New Message: %1$s</string>
+
+    <!-- Simulation message contents -->
+    <string name="sim_message_1">Hello, how are you?</string>
+    <string name="sim_message_2">Good day, can I talk to you?</string>
+    <string name="sim_message_3">Can you call back urgently?</string>
+    <string name="sim_message_4">Can you reach this number?</string>
+    <string name="sim_message_5">Hi, I\'m a new number!</string>
+    <string name="sim_message_6">Hello, can we meet?</string>
+    <string name="sim_message_7">Good evening, we need to talk about an important matter.</string>
+    <string name="sim_message_8">Hello, I\'d like to get some information.</string>
+    <string name="sim_message_9">Greetings, how can I help you?</string>
+    <string name="sim_message_10">Hello, have we met before?</string>
+
+    <!-- Notification channel definitions -->
+    <string name="notification_channel_name">Message Notifications</string>
+    <string name="notification_channel_description">Notifications for incoming messages</string>
     <string name="take_photo">Take Photo</string>
     <string name="select_image_source">Select Image Source</string>
-    <string name="permissions_required">Permissions Required</string>
+    <string name="permissions_required">Permissions must be granted to add a photo</string>
+    <string name="contact_add_error">An error occurred while adding contact</string>
+    <!-- ChatActivity.kt için string'ler -->
+    <string name="typing_indicator">typing...</string>
+    <string name="default_contact_name">Contact</string>
+
+    <!-- Automatic responses -->
+    <string name="auto_response_1">Hello, I got your message.</string>
+    <string name="auto_response_2">I\'m busy right now, can we talk later?</string>
+    <string name="auto_response_3">Thank you!</string>
+    <string name="auto_response_4">What do you think about this?</string>
+    <string name="auto_response_5">Okay, I understand.</string>
+    <string name="auto_response_6">Really? That\'s great!</string>
+    <string name="auto_response_7">I\'ll be there shortly.</string>
+    <string name="auto_response_8">Are you available tonight?</string>
+    <string name="auto_response_9">Do you need any help?</string>
+    <string name="auto_response_10">How\'s it going?</string>
+    <string name="auto_response_11">Do you remember me?</string>
+    <string name="auto_response_12">I\'ve noted this information.</string>
+    <string name="auto_response_13">Thanks for the message!</string>
+    <string name="auto_response_14">Let\'s talk again later.</string>
+    <string name="auto_response_15">Have a nice day!</string>
+    <string name="auto_response_16">Take care of yourself.</string>
+
+    <!-- Simulation menu item -->
+    <string name="simulate_message">New Message Simulation</string>
+
+    <string name="call_permission_title">Call Permission Required</string>
+    <string name="call_permission_message">Phone permission is required to call the contact directly.</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="no_call_app">No application found that can make calls</string>
+    <string name="call_failed">Call failed: %1$s</string>
+    <string name="no_valid_phone">No valid phone number</string>
+    <string name="call_permission_denied">Call permission denied</string>
+    <string name="permission_request_error">Error occurred during permission request: %1$s</string>
+    <string name="edit_contact_button">Edit Contact</string>
+    <string name="call_button">Call</string>
+    <string name="permissions_required_photo">Permissions are required to add a photo</string>
+    <string name="image_save_failed">Failed to save image</string>
+    <string name="image_process_error">Error occurred while processing image</string>
+    <string name="image_display_error">Could not display image</string>
+    <string name="permissions_dialog_title">Permissions Required</string>
+    <string name="permissions_dialog_message">You need to manually grant permissions to use these features. Would you like to open app settings?</string>
+    <string name="go_to_settings">Go to Settings</string>
+    <string name="camera_failed">Failed to start camera: %1$s</string>
+    <string name="edit_contact_title">Edit Contact</string>
+    <string name="save_edits">Save Changes</string>
+    <string name="select_image_button">Select Image</string>
+    <string name="add_photo">Add Photo</string>
+    <string name="contact_photo">Contact Photo</string>
+    <string name="profile_image">Profile Image</string>
+
 </resources>

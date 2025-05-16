@@ -33,6 +33,10 @@ class ContactDetailActivity : BaseActivity() {
     private lateinit var emailView: TextView
     private lateinit var addressView: TextView
     private lateinit var notesView: TextView
+
+    companion object {
+        private const val CHAT_REQUEST_CODE = 2 // EditActivity için 1 kullanıldığından farklı bir değer
+    }
     
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,7 +74,7 @@ class ContactDetailActivity : BaseActivity() {
                 val intent = Intent(this, ChatActivity::class.java)
                 intent.putExtra("contact_id", contactId)
                 intent.putExtra("contact_name", nameView.text.toString())
-                startActivity(intent)
+                startActivityForResult(intent, CHAT_REQUEST_CODE) // startActivity yerine startActivityForResult kullanın
             }
 
             editButton = findViewById(R.id.buttonEditContact)
@@ -157,16 +161,16 @@ class ContactDetailActivity : BaseActivity() {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CALL_PHONE)) {
                     // Kullanıcıya neden izin istediğimizi açıklayalım
                     AlertDialog.Builder(this)
-                        .setTitle("Arama İzni Gerekli")
-                        .setMessage("Kişiyi doğrudan aramak için telefon izni gerekiyor.")
-                        .setPositiveButton("İzin Ver") { _, _ ->
+                        .setTitle(getString(R.string.call_permission_title))
+                        .setMessage(getString(R.string.call_permission_message))
+                        .setPositiveButton(getString(R.string.grant_permission)) { _, _ ->
                             ActivityCompat.requestPermissions(
                                 this,
                                 arrayOf(Manifest.permission.CALL_PHONE),
                                 CALL_PERMISSION_REQUEST
                             )
                         }
-                        .setNegativeButton("İptal", null)
+                        .setNegativeButton(getString(R.string.cancel), null)
                         .show()
                 } else {
                     // İlk kez izin isteniyor
@@ -181,7 +185,7 @@ class ContactDetailActivity : BaseActivity() {
                 dialPhoneNumber()
             }
         } catch (e: Exception) {
-            Toast.makeText(this, "İzin isteği sırasında hata oluştu: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.permission_request_error, e.message), Toast.LENGTH_LONG).show()
             e.printStackTrace()
         }
     }
@@ -201,14 +205,14 @@ class ContactDetailActivity : BaseActivity() {
                 if (callIntent.resolveActivity(packageManager) != null) {
                     startActivity(callIntent)
                 } else {
-                    Toast.makeText(this, "Arama yapabilecek uygulama bulunamadı", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.no_call_app), Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(this, "Arama yapılamadı: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.call_failed, e.message), Toast.LENGTH_SHORT).show()
                 e.printStackTrace()
             }
         } else {
-            Toast.makeText(this, "Geçerli bir telefon numarası yok", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.no_valid_phone), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -218,24 +222,53 @@ class ContactDetailActivity : BaseActivity() {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 dialPhoneNumber()
             } else {
-                Toast.makeText(this, "Arama izni reddedildi", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.call_permission_denied), Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        
         if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
-            // Kişi güncellendi, bilgileri yeniden yüklüyoruz
+            // Kişi düzenlendi, bilgileri yeniden yüklüyoruz
+            loadContactDetails(contactId)
+        }
+        // ChatActivity'den dönen sonucu işleyelim
+        else if (requestCode == CHAT_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            // data null değilse ve içinde contact_id varsa
+            data?.let {
+                if (it.hasExtra("contact_id")) {
+                    val returnedContactId = it.getIntExtra("contact_id", -1)
+                    if (returnedContactId != -1) {
+                        contactId = returnedContactId // contactId'yi güncelle
+                        loadContactDetails(contactId) // detayları yeniden yükle
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        
+        // Eğer contactId belirlenmişse, detayları yeniden yükle
+        if (contactId != -1) {
             loadContactDetails(contactId)
         }
     }
     
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
+            // Intent ile geriye contact_id değerini gönderelim
+            val resultIntent = Intent()
+            resultIntent.putExtra("contact_id", contactId)
+            setResult(Activity.RESULT_OK, resultIntent)
             finish()
             return true
         }
         return super.onOptionsItemSelected(item)
     }
+
+    
 }

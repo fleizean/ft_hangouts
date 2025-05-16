@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
@@ -22,9 +23,16 @@ import android.widget.TextView
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import android.os.Handler
+import android.os.Looper
+import android.content.ContentValues
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 
 class MainActivity : BaseActivity() {
-
     private lateinit var listView: ListView
     private lateinit var dbHelper: DBHelper
     private lateinit var adapter: ArrayAdapter<String>
@@ -32,10 +40,15 @@ class MainActivity : BaseActivity() {
     private val contactIds = mutableListOf<Int>()
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var toolbar: Toolbar
-
+    private val handler = Handler(Looper.getMainLooper())
+    private var isSimulationActive = false
     private var lastBackgroundTime: Long = 0
     
-        override fun onCreate(savedInstanceState: Bundle?) {
+    companion object {
+        private const val REQUEST_NOTIFICATION_PERMISSION = 100
+    }
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         
@@ -63,18 +76,55 @@ class MainActivity : BaseActivity() {
             ).show()
         }
         
+        val addContactButton = findViewById<Button>(R.id.buttonAddContact)
+            addContactButton.setOnClickListener {
+                // AddContactActivity'ye git
+                val intent = Intent(this, AddContactActivity::class.java)
+                startActivity(intent)
+            }
         listView = findViewById(R.id.contactListView)
         dbHelper = DBHelper(this)
         
-        val addButton = findViewById<Button>(R.id.buttonAddContact)
-        addButton.setOnClickListener {
-            val intent = Intent(this, AddContactActivity::class.java)
-            startActivity(intent)
+        // Android 13 (Tiramisu) ve sonrası için bildirim izni kontrolü
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            // Check if we have notification permission
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // Request the permission
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    REQUEST_NOTIFICATION_PERMISSION
+                )
+            }
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val name = getString(R.string.notification_channel_name)
+            val descriptionText = getString(R.string.notification_channel_description)
+            val importance = android.app.NotificationManager.IMPORTANCE_DEFAULT
+            val channel = android.app.NotificationChannel("message_channel", name, importance).apply {
+                description = descriptionText
+            }
+            // Kanalı sisteme kaydet
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            notificationManager.createNotificationChannel(channel)
         }
         
         setupContactList()
     }
     
+    override fun onDestroy() {
+        super.onDestroy()
+        // Aktivite yok edilirken simülasyonu durdur
+        if (isSimulationActive) {
+            stopMessageSimulation()
+        }
+    }
+
     private fun setupContactList() {
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, contactList)
         listView.adapter = adapter
@@ -84,6 +134,130 @@ class MainActivity : BaseActivity() {
             val intent = Intent(this, ContactDetailActivity::class.java)
             intent.putExtra("contact_id", contactId)
             startActivity(intent)
+        }
+    }
+
+    private val simulationRunnable = object : Runnable {
+        override fun run() {
+            if (isSimulationActive) {
+                simulateIncomingMessage()
+                
+                // 1-5 dakika arasında rastgele bir süre sonra tekrar çalıştır
+                val delayMinutes = (1..5).random()
+                val delayMillis = delayMinutes * 60 * 1000L
+                handler.postDelayed(this, delayMillis)
+            }
+        }
+    }
+
+    private fun startMessageSimulation() {
+        if (!isSimulationActive) {
+            isSimulationActive = true
+            // İlk mesajı 5-20 saniye içinde gönder
+            val initialDelay = (5..20).random() * 1000L
+            handler.postDelayed(simulationRunnable, initialDelay)
+            Toast.makeText(
+                this,
+                getString(R.string.simulation_started, initialDelay/1000),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun stopMessageSimulation() {
+    if (isSimulationActive) {
+            isSimulationActive = false
+            handler.removeCallbacks(simulationRunnable)
+            // Bu kısımda Toast.makeText eksik, sadece state değişiyor
+            Toast.makeText(
+                this,
+                getString(R.string.simulation_stopped),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+    
+    private fun simulateIncomingMessage() {
+        val unknownNumber = "+90" + (1000000000..9999999999).random()
+        
+        // Numara kişilerde var mı kontrol et
+        val db = dbHelper.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM contacts WHERE phone = ?", arrayOf(unknownNumber))
+        
+        if (cursor.count == 0) {
+            // Yeni kişi oluştur - telefon numarasını isim olarak kullan
+            val contactValues = ContentValues().apply {
+                put("name", unknownNumber)
+                put("phone", unknownNumber)
+                put("email", "")
+                put("address", "")
+                put("notes", getString(R.string.auto_created) + 
+                    SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date()))
+            }
+            
+            val newContactId = db.insert("contacts", null, contactValues)
+            
+            // Rastgele mesaj metinleri
+            val messages = listOf(
+                getString(R.string.sim_message_1),
+                getString(R.string.sim_message_2),
+                getString(R.string.sim_message_3),
+                getString(R.string.sim_message_4),
+                getString(R.string.sim_message_5),
+                getString(R.string.sim_message_6),
+                getString(R.string.sim_message_7),
+                getString(R.string.sim_message_8),
+                getString(R.string.sim_message_9),
+                getString(R.string.sim_message_10)
+            )
+            
+            val randomMessage = messages.random()
+            
+            // Yeni mesaj ekle
+            val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+            val messageValues = ContentValues().apply {
+                put("contact_id", newContactId)
+                put("message", randomMessage)
+                put("sender", "other")
+                put("timestamp", timestamp)
+            }
+            
+            db.insert("messages", null, messageValues)
+            
+            // Bildirim göster - izin kontrolü ile
+            showNotification(unknownNumber, randomMessage)
+            
+            // Kişi listesini güncelle
+            loadContacts()
+            
+            // Kullanıcıyı bilgilendir
+            Toast.makeText(
+                this, 
+                getString(R.string.new_message_received, unknownNumber), 
+                Toast.LENGTH_LONG
+            ).show()
+        }
+        
+        cursor.close()
+    }
+    
+    private fun showNotification(sender: String, message: String) {
+        // Bildirim göster
+        val builder = NotificationCompat.Builder(this, "message_channel")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle(getString(R.string.notification_title, sender))
+            .setContentText(message.take(30) + if(message.length > 30) "..." else "")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            
+        val notificationManager = NotificationManagerCompat.from(this)
+        
+        // Android 13 ve üzeri için bildirim izni kontrolü
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU || 
+            ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) 
+            == PackageManager.PERMISSION_GRANTED) {
+            
+            notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
         }
     }
     
@@ -112,7 +286,18 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    fun refreshContactList() {
+        loadContacts()
+    }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        
+        // Yeni kişi eklendiğinde güncelleme isteği kontrol edilir
+        if (intent?.getBooleanExtra("refresh_contacts", false) == true) {
+            loadContacts()
+        }
+    }
     
     private fun loadContacts() {
         contactList.clear()
@@ -134,6 +319,12 @@ class MainActivity : BaseActivity() {
     
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
+        
+        // Simülasyon durumuna göre menü öğesini güncelle
+        menu.findItem(R.id.action_toggle_simulation)?.setTitle(
+            if (isSimulationActive) R.string.stop_simulation else R.string.start_simulation
+        )
+        
         return true
     }
     
@@ -143,28 +334,40 @@ class MainActivity : BaseActivity() {
                 showColorPickerDialog()
                 true
             }
+            R.id.action_toggle_simulation -> {
+                // Simülasyon durumunu değiştir
+                if (isSimulationActive) {
+                    stopMessageSimulation()
+                } else {
+                    startMessageSimulation()
+                }
+                // Menü başlığını güncelle
+                item.setTitle(if (isSimulationActive) R.string.stop_simulation else R.string.start_simulation)
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
     
     private fun showColorPickerDialog() {
-        val colors = arrayOf(
-            getString(R.string.color_purple) to R.color.purple_500,
-            getString(R.string.color_blue) to R.color.toolbar_blue,
-            getString(R.string.color_green) to R.color.toolbar_green,
-            getString(R.string.color_red) to R.color.toolbar_red
-        )
-        
-        val colorNames = colors.map { it.first }.toTypedArray()
-        
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.change_toolbar_color))
-            .setItems(colorNames) { _, which ->
-                val colorResId = colors[which].second
-                saveAndApplyToolbarColor(colorResId)
-            }
-            .show()
-    }
+    val colors = arrayOf(
+        getString(R.string.color_purple) to R.color.purple_500,
+        getString(R.string.color_blue) to R.color.toolbar_blue,
+        getString(R.string.color_green) to R.color.toolbar_green,
+        getString(R.string.color_red) to R.color.toolbar_red
+    )
+    
+    val colorNames = colors.map { it.first }.toTypedArray()
+    
+    AlertDialog.Builder(this)
+        .setTitle(getString(R.string.change_toolbar_color))
+        .setItems(colorNames) { _, which ->
+            val colorResId = colors[which].second
+            saveToolbarColor(colorResId) // BaseActivity'deki metodu kullan
+            applyToolbarColor(toolbar)   // BaseActivity'deki metodu kullan
+        }
+        .show()
+}
     
     private fun saveAndApplyToolbarColor(colorResId: Int) {
         // Save color preference
@@ -175,10 +378,9 @@ class MainActivity : BaseActivity() {
     }
     
     // Override the method with 'open' modifier in BaseActivity
-    override fun applyToolbarColor(toolbar: Toolbar) {
-        // Call parent implementation which handles the actual color application
-        super.applyToolbarColor(toolbar)
-    }
+    
+    
+   
 }
 
 class ContactAdapter(context: Context, val contacts: List<Contact>) : 

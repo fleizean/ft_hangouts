@@ -1,5 +1,6 @@
 package com.example.ft_hangouts
 
+import android.app.Activity
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Button
@@ -32,10 +33,32 @@ class ChatActivity : BaseActivity() {
     private var contactName: String = ""
     private lateinit var adapter: MessageAdapter
     private val messageList = mutableListOf<Message>()
+    private lateinit var typingIndicator: TextView
+
+    private lateinit var AUTO_RESPONSES: List<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
+
+        AUTO_RESPONSES = listOf(
+            getString(R.string.auto_response_1),
+            getString(R.string.auto_response_2),
+            getString(R.string.auto_response_3),
+            getString(R.string.auto_response_4),
+            getString(R.string.auto_response_5),
+            getString(R.string.auto_response_6),
+            getString(R.string.auto_response_7),
+            getString(R.string.auto_response_8),
+            getString(R.string.auto_response_9),
+            getString(R.string.auto_response_10),
+            getString(R.string.auto_response_11),
+            getString(R.string.auto_response_12),
+            getString(R.string.auto_response_13),
+            getString(R.string.auto_response_14),
+            getString(R.string.auto_response_15),
+            getString(R.string.auto_response_16)
+        )
 
         // Toolbar'ı ayarla
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
@@ -43,7 +66,7 @@ class ChatActivity : BaseActivity() {
         
         // Intent'ten verileri al
         contactId = intent.getIntExtra("contact_id", -1)
-        contactName = intent.getStringExtra("contact_name") ?: "Kişi"
+        contactName = intent.getStringExtra("contact_name") ?: getString(R.string.default_contact_name)
         
         supportActionBar?.title = contactName
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -61,6 +84,7 @@ class ChatActivity : BaseActivity() {
 
         sendButton.setOnClickListener {
             sendMessage()
+            typingIndicator = findViewById(R.id.typingIndicator)
         }
     }
 
@@ -89,7 +113,7 @@ class ChatActivity : BaseActivity() {
         }
     }
 
-    private fun sendMessage() {
+        private fun sendMessage() {
         val messageText = messageInput.text.toString().trim()
         
         if (messageText.isEmpty()) return
@@ -111,69 +135,69 @@ class ChatActivity : BaseActivity() {
         
         // Mesajları yeniden yükle
         loadMessages()
+        
+        // Otomatik yanıt için gecikmeli bir işlem başlat
+        scheduleAutoResponse()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-    menuInflater.inflate(R.menu.menu_chat, menu)
-    return true
-}
-
-override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    return when (item.itemId) {
-        R.id.action_simulate_message -> {
-            simulateIncomingMessage()
-            true
-        }
-        android.R.id.home -> {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            // Intent ile geriye contact_id değerini gönderelim
+            val resultIntent = Intent()
+            resultIntent.putExtra("contact_id", contactId)
+            setResult(Activity.RESULT_OK, resultIntent)
             finish()
-            true
+            return true
         }
-        else -> super.onOptionsItemSelected(item)
+        return super.onOptionsItemSelected(item)
     }
-}
-
-private fun simulateIncomingMessage() {
-    val unknownNumber = "+90" + (1000000000..9999999999).random()
     
-    // Numara kişilerde var mı kontrol et
-    val db = dbHelper.readableDatabase
-    val cursor = db.rawQuery("SELECT * FROM contacts WHERE phone = ?", arrayOf(unknownNumber))
-    
-    if (cursor.count == 0) {
-        // Yeni kişi oluştur ve direkt olarak rehbere ekle
-        val contactValues = ContentValues().apply {
-            put("name", "Bilinmeyen Numara")  // Default isim
-            put("phone", unknownNumber)
-            // Diğer varsayılan alanlar eklenebilir
-            put("email", "")
-            put("address", "")
+    // Rastgele bir yanıt zamanlayıcısı
+    private fun scheduleAutoResponse() {
+        // 1-5 saniye arasında rastgele bir gecikme süresi
+        val delay = (1000..5000).random().toLong()
+        
+        messageListView.post {
+            typingIndicator.visibility = View.VISIBLE
         }
         
-        val contactId = db.insert("contacts", null, contactValues)
+        // Bir süre sonra yanıt gönder
+        messageListView.postDelayed({
+            // Uygulama hala aktifse
+            if (!isFinishing) {
+                // "Yazıyor..." metnini gizle
+                typingIndicator.visibility = View.GONE
+                
+                // Yanıt gönder
+                sendAutoResponse()
+            }
+        }, delay)
+    }
+    
+    // Otomatik yanıt gönderme
+    private fun sendAutoResponse() {
+        // Rastgele bir mesaj seç
+        val responseMessage = AUTO_RESPONSES.random()
+        val currentTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
         
-        // Yeni mesaj ekle
-        val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
-        val messageValues = ContentValues().apply {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
             put("contact_id", contactId)
-            put("message", "Merhaba, ben bilinmeyen numara!")
-            put("sender", "other")
-            put("timestamp", timestamp)
+            put("message", responseMessage)
+            put("sender", "other")  // Karşı tarafın mesajı
+            put("timestamp", currentTime)
         }
         
-        db.insert("messages", null, messageValues)
+        db.insert("messages", null, values)
         
-        // Kullanıcıyı bilgilendir
-        Toast.makeText(
-            this, 
-            "Bilinmeyen bir numaradan ($unknownNumber) mesaj aldınız. Kişi rehbere eklendi.", 
-            Toast.LENGTH_LONG
-        ).show()
-    } else {
-        Toast.makeText(this, "Bu numara zaten kişilerinizde mevcut", Toast.LENGTH_SHORT).show()
+        // Mesajları yeniden yükle
+        loadMessages()
+        
+        // Yazıyor animasyonu eklenebilir (opsiyonel)
     }
-    
-    cursor.close()
-}
+
+
+
 
 
     

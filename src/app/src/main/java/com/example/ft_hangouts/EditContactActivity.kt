@@ -128,7 +128,7 @@ class EditContactActivity : BaseActivity() {
                     // İzinler eksik, kullanıcıyı bilgilendir
                     Toast.makeText(
                         this,
-                        "Fotoğraf eklemek için izinlerin verilmesi gerekli",
+                        getString(R.string.permissions_required_photo),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -147,13 +147,11 @@ class EditContactActivity : BaseActivity() {
                             imageView.setImageURI(savedUri)
                             Log.d("GalleryDebug", "Image saved to: $savedUri")
                         } ?: run {
-                            Toast.makeText(this, "Resim kaydedilemedi", Toast.LENGTH_SHORT)
-                                .show()
+                            Toast.makeText(this, getString(R.string.image_save_failed), Toast.LENGTH_SHORT).show()
                         }
                     } catch (e: Exception) {
                         Log.e("GalleryDebug", "Error with image: ${e.message}", e)
-                        Toast.makeText(this, "Resim işlenirken hata oluştu", Toast.LENGTH_SHORT)
-                            .show()
+                        Toast.makeText(this, getString(R.string.image_process_error), Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -167,7 +165,7 @@ class EditContactActivity : BaseActivity() {
                         imageView.setImageURI(imageUri)
                     } catch (e: Exception) {
                         Log.e("CameraDebug", "Error displaying image: ${e.message}", e)
-                        Toast.makeText(this, "Resim görüntülenemedi", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.image_display_error), Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -285,16 +283,16 @@ class EditContactActivity : BaseActivity() {
     
     private fun showSettingsDialog() {
         AlertDialog.Builder(this)
-            .setTitle("İzinler Gerekiyor")
-            .setMessage("Bu özellikleri kullanabilmek için izinleri manuel olarak vermeniz gerekiyor. Uygulama ayarlarını açmak ister misiniz?")
-            .setPositiveButton("Ayarlara Git") { _, _ ->
+           .setTitle(getString(R.string.permissions_dialog_title))
+            .setMessage(getString(R.string.permissions_dialog_message))
+            .setPositiveButton(getString(R.string.go_to_settings)) { _, _ ->
                 // Uygulama izin ayarlarına yönlendir
                 val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                 val uri = Uri.fromParts("package", packageName, null)
                 intent.data = uri
                 startActivity(intent)
             }
-            .setNegativeButton("İptal", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 
@@ -347,8 +345,7 @@ class EditContactActivity : BaseActivity() {
             }
         } catch (e: Exception) {
             Log.e("CameraDebug", "Error creating photo file: ${e.message}", e)
-            Toast.makeText(this, "Kamera başlatılamadı: ${e.message}", Toast.LENGTH_SHORT)
-                .show()
+            Toast.makeText(this, getString(R.string.camera_failed, e.message), Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="@android:color/white">
 
     <include
         android:id="@+id/toolbar"
@@ -19,19 +19,55 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp">
             
             <LinearLayout
                 android:orientation="vertical"
                 android:padding="24dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_marginBottom="24dp">
+                    
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        app:cardCornerRadius="60dp"
+                        app:cardElevation="2dp"
+                        app:strokeWidth="2dp"
+                        app:strokeColor="@android:color/holo_blue_light">
+                        
+                        <ImageView
+                            android:id="@+id/profileImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/default_profile" 
+                            android:contentDescription="Profile Image"/>
+                    </com.google.android.material.card.MaterialCardView>
+                    
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonSelectImage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/add_photo"
+                        android:layout_marginTop="12dp"
+                        app:icon="@android:drawable/ic_menu_camera"
+                        style="@style/Widget.MaterialComponents.Button.TextButton" />
+                </LinearLayout>
                 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
+                    app:startIconDrawable="@android:drawable/ic_menu_myplaces"
+                    app:boxStrokeColor="@android:color/holo_blue_dark"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                     
                     <com.google.android.material.textfield.TextInputEditText
@@ -45,6 +81,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
+                    app:startIconDrawable="@android:drawable/ic_menu_call"
+                    app:boxStrokeColor="@color/primary_color"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                     
                     <com.google.android.material.textfield.TextInputEditText
@@ -59,6 +97,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
+                    app:startIconDrawable="@android:drawable/ic_dialog_email"
+                    app:boxStrokeColor="@color/primary_color"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                     
                     <com.google.android.material.textfield.TextInputEditText
@@ -73,6 +113,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
+                    app:startIconDrawable="@android:drawable/ic_dialog_map"
+                    app:boxStrokeColor="@color/primary_color"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                     
                     <com.google.android.material.textfield.TextInputEditText
@@ -85,46 +127,19 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="24dp"
+                    android:layout_marginBottom="32dp"
+                    app:startIconDrawable="@android:drawable/ic_menu_edit"
+                    app:boxStrokeColor="@color/primary_color"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                     
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/inputNotes"
                         android:hint="@string/notes"
-                        android:minLines="2"
+                        android:minLines="3"
+                        android:gravity="top|start"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
                 </com.google.android.material.textfield.TextInputLayout>
-
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:layout_marginBottom="16dp">
-    
-    <androidx.cardview.widget.CardView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        app:cardCornerRadius="50dp"
-        app:cardElevation="4dp">
-        
-        <ImageView
-            android:id="@+id/profileImage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/default_profile" />
-    </androidx.cardview.widget.CardView>
-    
-    <Button
-        android:id="@+id/buttonSelectImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Fotoğraf Ekle"
-        android:layout_marginTop="8dp"
-        style="@style/Widget.MaterialComponents.Button.TextButton" />
-</LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonSave"
@@ -132,7 +147,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
                     android:textSize="16sp"
-                    app:cornerRadius="8dp"
+                    android:textStyle="bold"
+                    app:cornerRadius="12dp"
+                    app:elevation="4dp"
+                    android:backgroundTint="@android:color/holo_blue_dark"
                     app:icon="@android:drawable/ic_menu_save"
                     app:iconGravity="textStart" />
             </LinearLayout>

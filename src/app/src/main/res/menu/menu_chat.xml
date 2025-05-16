@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_simulate_message"
-        android:title="Yeni Mesaj Simülasyonu"
+        android:title="@string/simulate_message"
         android:icon="@android:drawable/ic_dialog_email"
         app:showAsAction="never" />
 </menu>

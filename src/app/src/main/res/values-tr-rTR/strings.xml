@@ -54,4 +54,80 @@
     <string name="color_green">Yeşil</string>
     <string name="color_red">Kırmızı</string>
     <string name="last_background">Son arkaplanda kalma zamanı</string>
+    <string name="start_simulation">Mesaj Simülasyonunu Başlat</string>
+    <string name="stop_simulation">Mesaj Simülasyonunu Durdur</string>
+    <string name="simulation_started">Rastgele mesaj simülasyonu başlatıldı. İlk mesaj %1$d saniye içinde gelecek.</string>
+    <string name="simulation_stopped">Rastgele mesaj simülasyonu durduruldu.</string>
+    <string name="auto_created">Otomatik oluşturuldu: </string>
+    <string name="new_message_received">%1$s numarasından yeni bir mesaj aldınız.</string>
+    <string name="notification_title">Yeni Mesaj: %1$s</string>
+
+    <!-- Simülasyon mesaj içerikleri -->
+    <string name="sim_message_1">Merhaba, nasılsın?</string>
+    <string name="sim_message_2">İyi günler, sizinle konuşabilir miyim?</string>
+    <string name="sim_message_3">Acil dönüş yapabilir misiniz?</string>
+    <string name="sim_message_4">Bu numaraya ulaşabiliyorsunuz değil mi?</string>
+    <string name="sim_message_5">Selam, ben yeni bir numara!</string>
+    <string name="sim_message_6">Merhaba, tanışabilir miyiz?</string>
+    <string name="sim_message_7">İyi akşamlar, önemli bir konu hakkında görüşmemiz gerekiyor.</string>
+    <string name="sim_message_8">Merhaba, bir bilgi almak istiyorum.</string>
+    <string name="sim_message_9">Selamlar, nasıl yardımcı olabilirim?</string>
+    <string name="sim_message_10">Merhaba, daha önce görüşmüş müydük?</string>
+
+    <!-- Bildirim kanalı tanımlamaları -->
+    <string name="notification_channel_name">Mesaj Bildirimleri</string>
+    <string name="notification_channel_description">Gelen mesajlar için bildirimler</string>
+    <string name="pick_from_gallery">Galeriden Seç</string>
+    <string name="take_photo">Fotoğraf Çek</string>
+    <string name="select_image_source">Resim Kaynağını Seçin</string>
+    <string name="permissions_required">Fotoğraf eklemek için izinlerin verilmesi gerekli</string>
+    <string name="contact_add_error">Kişi eklenirken bir hata oluştu</string>
+    <!-- ChatActivity.kt için string'ler -->
+    <string name="typing_indicator">yazıyor...</string>
+    <string name="default_contact_name">Kişi</string>
+
+    <!-- Otomatik yanıtlar -->
+    <string name="auto_response_1">Merhaba, mesajını aldım.</string>
+    <string name="auto_response_2">Şu anda meşgulüm, sonra görüşebilir miyiz?</string>
+    <string name="auto_response_3">Teşekkür ederim!</string>
+    <string name="auto_response_4">Bu konuda ne düşünüyorsun?</string>
+    <string name="auto_response_5">Tamam, anladım.</string>
+    <string name="auto_response_6">Gerçekten mi? Harika!</string>
+    <string name="auto_response_7">Birazdan oradayım.</string>
+    <string name="auto_response_8">Bu akşam müsait misin?</string>
+    <string name="auto_response_9">Yardıma ihtiyacın var mı?</string>
+    <string name="auto_response_10">Durum nasıl?</string>
+    <string name="auto_response_11">Beni hatırladın mı?</string>
+    <string name="auto_response_12">Bu bilgiyi not aldım.</string>
+    <string name="auto_response_13">Mesaj için teşekkürler!</string>
+    <string name="auto_response_14">Sonra tekrar konuşalım.</string>
+    <string name="auto_response_15">İyi günler!</string>
+    <string name="auto_response_16">Kendine dikkat et.</string>
+
+    <!-- Simülasyon menü öğesi -->
+    <string name="simulate_message">Yeni Mesaj Simülasyonu</string>
+    <string name="call_permission_title">Arama İzni Gerekli</string>
+    <string name="call_permission_message">Kişiyi doğrudan aramak için telefon izni gerekiyor.</string>
+    <string name="grant_permission">İzin Ver</string>
+    <string name="no_call_app">Arama yapabilecek uygulama bulunamadı</string>
+    <string name="call_failed">Arama yapılamadı: %1$s</string>
+    <string name="no_valid_phone">Geçerli bir telefon numarası yok</string>
+    <string name="call_permission_denied">Arama izni reddedildi</string>
+    <string name="permission_request_error">İzin isteği sırasında hata oluştu: %1$s</string>
+    <string name="edit_contact_button">Kişiyi Düzenle</string>
+    <string name="call_button">Ara</string>
+    <string name="permissions_required_photo">Fotoğraf eklemek için izinlerin verilmesi gerekli</string>
+    <string name="image_save_failed">Resim kaydedilemedi</string>
+    <string name="image_process_error">Resim işlenirken hata oluştu</string>
+    <string name="image_display_error">Resim görüntülenemedi</string>
+    <string name="permissions_dialog_title">İzinler Gerekiyor</string>
+    <string name="permissions_dialog_message">Bu özellikleri kullanabilmek için izinleri manuel olarak vermeniz gerekiyor. Uygulama ayarlarını açmak ister misiniz?</string>
+    <string name="go_to_settings">Ayarlara Git</string>
+    <string name="camera_failed">Kamera başlatılamadı: %1$s</string>
+    <string name="edit_contact_title">Kişiyi Düzenle</string>
+    <string name="save_edits">Değişiklikleri Kaydet</string>
+    <string name="select_image_button">Resim Seç</string>
+    <string name="add_photo">Fotoğraf Ekle</string>
+    <string name="contact_photo">Kişi Fotoğrafı</string>
+    <string name="profile_image">Profil Resmi</string>
 </resources>
