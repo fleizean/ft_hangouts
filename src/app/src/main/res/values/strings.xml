@@ -39,6 +39,7 @@
     <string name="my_contacts">My Contacts</string>
     <string name="save">Save</string>
     <string name="name_cannot_be_empty">Name cannot be empty</string>
+    <string name="phone_cannot_be_empty">Phone cannot be empty</string>
     <string name="contact_added_success">Contact added</string>
     <string name="contact_details_title">Contact Details</string>
     <string name="contact_not_found_message">Contact not found.</string>
@@ -103,9 +104,6 @@
     <string name="auto_response_14">Let\'s talk again later.</string>
     <string name="auto_response_15">Have a nice day!</string>
     <string name="auto_response_16">Take care of yourself.</string>
-
-    <!-- Simulation menu item -->
-    <string name="simulate_message">New Message Simulation</string>
 
     <string name="call_permission_title">Call Permission Required</string>
     <string name="call_permission_message">Phone permission is required to call the contact directly.</string>

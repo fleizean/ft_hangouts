@@ -87,6 +87,12 @@ class AddContactActivity : BaseActivity() {
                 return@setOnClickListener
             }
 
+            if (phone.isBlank()) {
+                Toast.makeText(this, getString(R.string.phone_cannot_be_empty), Toast.LENGTH_SHORT)
+                    .show()
+                return@setOnClickListener
+            }
+
             val db = dbHelper.writableDatabase
             val values = ContentValues().apply {
                 put("name", name)

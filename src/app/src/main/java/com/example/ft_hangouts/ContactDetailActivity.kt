@@ -27,7 +27,6 @@ class ContactDetailActivity : BaseActivity() {
     private val CALL_PERMISSION_REQUEST = 100
     private lateinit var phoneNumber: String
     
-    // UI bileşenleri için değişkenler ekleyelim (daha sonra tekrar kullanmak için)
     private lateinit var nameView: TextView
     private lateinit var phoneView: TextView
     private lateinit var emailView: TextView

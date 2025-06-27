@@ -39,6 +39,7 @@
     <string name="my_contacts">Kişilerim</string>
     <string name="save">Kaydet</string>
     <string name="name_cannot_be_empty">İsim boş olamaz</string>
+    <string name="phone_cannot_be_empty">Numara boş olamaz</string>
     <string name="contact_added_success">Kişi eklendi</string>
     <string name="contact_details_title">Kişi Detayları</string>
     <string name="contact_not_found_message">Kişi bulunamadı.</string>
