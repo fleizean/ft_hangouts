@@ -92,24 +92,6 @@
     <string name="typing_indicator">yazıyor...</string>
     <string name="default_contact_name">Kişi</string>
 
-    <!-- Otomatik yanıtlar -->
-    <string name="auto_response_1">Merhaba, mesajını aldım.</string>
-    <string name="auto_response_2">Şu anda meşgulüm, sonra görüşebilir miyiz?</string>
-    <string name="auto_response_3">Teşekkür ederim!</string>
-    <string name="auto_response_4">Bu konuda ne düşünüyorsun?</string>
-    <string name="auto_response_5">Tamam, anladım.</string>
-    <string name="auto_response_6">Gerçekten mi? Harika!</string>
-    <string name="auto_response_7">Birazdan oradayım.</string>
-    <string name="auto_response_8">Bu akşam müsait misin?</string>
-    <string name="auto_response_9">Yardıma ihtiyacın var mı?</string>
-    <string name="auto_response_10">Durum nasıl?</string>
-    <string name="auto_response_11">Beni hatırladın mı?</string>
-    <string name="auto_response_12">Bu bilgiyi not aldım.</string>
-    <string name="auto_response_13">Mesaj için teşekkürler!</string>
-    <string name="auto_response_14">Sonra tekrar konuşalım.</string>
-    <string name="auto_response_15">İyi günler!</string>
-    <string name="auto_response_16">Kendine dikkat et.</string>
-
     <!-- Simülasyon menü öğesi -->
     <string name="simulate_message">Yeni Mesaj Simülasyonu</string>
     <string name="call_permission_title">Arama İzni Gerekli</string>
