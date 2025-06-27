@@ -7,6 +7,7 @@ import android.provider.Telephony
 import android.telephony.SmsMessage
 import android.util.Log
 import android.content.ContentValues
+import android.database.sqlite.SQLiteDatabase
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -52,7 +53,10 @@ class SmsReceiver : BroadcastReceiver() {
             if (contactId == null) {
                 Log.d(TAG, "No existing contact found, creating new contact")
                 // Kişi yoksa yeni kişi oluştur
-                contactId = createNewContact(db, phoneNumber)
+                contactId = createNewContact(
+                    db, phoneNumber,
+                    context = TODO()
+                )
             } else {
                 Log.d(TAG, "Found existing contact with ID: $contactId")
             }
@@ -77,18 +81,19 @@ class SmsReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun createNewContact(db: android.database.sqlite.SQLiteDatabase, phoneNumber: String): Long? {
+    private fun createNewContact(db: SQLiteDatabase, phoneNumber: String,context: Context
+    ): Long? {
         // Telefon numarasını temizle ve düzenle
         val cleanNumber = PhoneNumberMatcher.normalizePhoneNumber(phoneNumber)
         val displayNumber = formatPhoneForDisplay(phoneNumber)
+        val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
 
         val contactValues = ContentValues().apply {
             put("name", displayNumber) // Güzel formatlanmış numarayı isim olarak kullan
             put("phone", phoneNumber) // Orijinal numarayı telefon olarak kaydet
             put("email", "")
             put("address", "")
-            put("notes", "SMS'den otomatik oluşturuldu: " +
-                    SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date()))
+            put("notes", context.getString(R.string.auto_created_from_sms, timestamp))
         }
 
         val newRowId = db.insert("contacts", null, contactValues)

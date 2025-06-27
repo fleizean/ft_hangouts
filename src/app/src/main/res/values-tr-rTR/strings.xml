@@ -38,6 +38,11 @@
     <string name="add_new_contact">Yeni Kişi Ekle</string>
     <string name="my_contacts">Kişilerim</string>
     <string name="save">Kaydet</string>
+    <string name="item_contact_text">Kişi Adı</string>
+    <string name="item_contact_last_msg">Son mesaj burada gözükecek...</string>
+    <string name="auto_created_from_sms">SMS\'den otomatik oluşturuldu: %1$s</string>
+    <string name="imported_from_contacts">Sistem rehberinden aktarıldı: %1$s</string>
+    <string name="no_messages_yet">Henüz mesaj yok</string>
     <string name="name_cannot_be_empty">İsim boş olamaz</string>
     <string name="phone_cannot_be_empty">Numara boş olamaz</string>
     <string name="contact_added_success">Kişi eklendi</string>

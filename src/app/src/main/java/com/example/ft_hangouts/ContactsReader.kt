@@ -197,19 +197,19 @@ class ContactsReader(private val context: Context) {
      * Kişiyi veritabanına ekler
      */
     private fun insertContact(db: android.database.sqlite.SQLiteDatabase, contact: SystemContact): Boolean {
+        val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
         val values = ContentValues().apply {
             put("name", contact.name)
             put("phone", contact.phone)
             put("email", contact.email)
             put("address", "") // Sistem rehberinden adres alamıyoruz (ek izin gerekir)
-            put("notes", "Sistem rehberinden aktarıldı: " +
-                    SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date()))
+            put("notes", context.getString(R.string.imported_from_contacts, timestamp))
         }
 
         val result = db.insert("contacts", null, values)
         return result != -1L
     }
-
     /**
      * Belirli bir kişiyi sistem rehberinden çeker
      */

@@ -37,6 +37,11 @@
     <string name="change_toolbar_color">Change Toolbar Color</string>
     <string name="add_new_contact">Add New Contact</string>
     <string name="my_contacts">My Contacts</string>
+    <string name="item_contact_text">Contact Name</string>
+    <string name="item_contact_last_msg">The last message will appear here...</string>
+    <string name="auto_created_from_sms">Automatically created from SMS: %1$s</string>
+    <string name="imported_from_contacts">Imported from system contacts: %1$s</string>
+    <string name="no_messages_yet">No messages yet</string>
     <string name="save">Save</string>
     <string name="name_cannot_be_empty">Name cannot be empty</string>
     <string name="phone_cannot_be_empty">Phone cannot be empty</string>

@@ -57,7 +57,7 @@ class EnhancedContactAdapter(
                 timeText.text = formatTime(c.lastMessageTime)
                 timeText.visibility = View.VISIBLE
             } else {
-                lastMessageText.text = "Henüz mesaj yok"
+                lastMessageText.text = context.getString(R.string.no_messages_yet)
                 lastMessageText.visibility = View.VISIBLE
                 timeText.visibility = View.GONE
             }
