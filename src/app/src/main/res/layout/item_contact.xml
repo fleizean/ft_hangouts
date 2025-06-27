@@ -6,34 +6,99 @@
     android:layout_height="wrap_content"
     app:cardCornerRadius="8dp"
     app:cardElevation="2dp"
-    app:contentPadding="16dp">
+    android:layout_margin="4dp"
+    app:contentPadding="12dp">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:padding="4dp">
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            app:cardCornerRadius="20dp"
-            android:layout_marginEnd="16dp">
+        <!-- Profil Fotoğrafı Container -->
+        <RelativeLayout
+            android:id="@+id/profileImageContainer"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="12dp">
 
-            <ImageView
-                android:id="@+id/contactListImage"
+            <!-- Profil Fotoğrafı -->
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:src="@drawable/default_profile" />
-        </androidx.cardview.widget.CardView>
+                app:cardCornerRadius="25dp">
 
+                <ImageView
+                    android:id="@+id/contactListImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/default_profile"
+                    android:contentDescription="@string/contact_photo" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Okunmamış Mesaj Badge - En üstte -->
+            <TextView
+                android:id="@+id/contactListUnreadBadge"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="-2dp"
+                android:layout_marginEnd="-2dp"
+                android:background="@drawable/unread_badge_background"
+                android:text="9"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:elevation="4dp"
+                android:visibility="gone" />
+
+        </RelativeLayout>
+
+        <!-- İsim -->
         <TextView
             android:id="@+id/contactListName"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_toEndOf="@id/profileImageContainer"
+            android:layout_alignTop="@id/profileImageContainer"
+            android:layout_toStartOf="@+id/contactListTime"
+            android:text="Contact Name"
             android:textSize="16sp"
-            android:textColor="#212121" />
-    </LinearLayout>
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <!-- Son Mesaj -->
+        <TextView
+            android:id="@+id/contactListLastMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/contactListName"
+            android:layout_toEndOf="@id/profileImageContainer"
+            android:layout_toStartOf="@+id/contactListTime"
+            android:layout_marginTop="4dp"
+            android:text="Son mesaj içeriği burada görünecek..."
+            android:textSize="14sp"
+            android:textColor="@android:color/darker_gray"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <!-- Zaman -->
+        <TextView
+            android:id="@+id/contactListTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignTop="@id/contactListName"
+            android:text="14:25"
+            android:textSize="12sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginStart="8dp" />
+
+    </RelativeLayout>
 </androidx.cardview.widget.CardView>

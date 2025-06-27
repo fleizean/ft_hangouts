@@ -14,14 +14,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true">
-        
+
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp">
-            
+
             <LinearLayout
                 android:orientation="vertical"
                 android:padding="24dp"
@@ -34,7 +34,7 @@
                     android:orientation="vertical"
                     android:gravity="center"
                     android:layout_marginBottom="24dp">
-                    
+
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="120dp"
                         android:layout_height="120dp"
@@ -42,16 +42,16 @@
                         app:cardElevation="2dp"
                         app:strokeWidth="2dp"
                         app:strokeColor="@android:color/holo_blue_light">
-                        
+
                         <ImageView
                             android:id="@+id/profileImage"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:scaleType="centerCrop"
-                            android:src="@drawable/default_profile" 
-                            android:contentDescription="Profile Image"/>
+                            android:src="@drawable/default_profile"
+                            android:contentDescription="@string/profile_image"/>
                     </com.google.android.material.card.MaterialCardView>
-                    
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonSelectImage"
                         android:layout_width="wrap_content"
@@ -61,7 +61,7 @@
                         app:icon="@android:drawable/ic_menu_camera"
                         style="@style/Widget.MaterialComponents.Button.TextButton" />
                 </LinearLayout>
-                
+
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -69,7 +69,7 @@
                     app:startIconDrawable="@android:drawable/ic_menu_myplaces"
                     app:boxStrokeColor="@android:color/holo_blue_dark"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-                    
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/inputName"
                         android:hint="@string/name"
@@ -84,7 +84,7 @@
                     app:startIconDrawable="@android:drawable/ic_menu_call"
                     app:boxStrokeColor="@color/primary_color"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-                    
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/inputPhone"
                         android:hint="@string/phone"
@@ -100,7 +100,7 @@
                     app:startIconDrawable="@android:drawable/ic_dialog_email"
                     app:boxStrokeColor="@color/primary_color"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-                    
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/inputEmail"
                         android:hint="@string/email"
@@ -116,7 +116,7 @@
                     app:startIconDrawable="@android:drawable/ic_dialog_map"
                     app:boxStrokeColor="@color/primary_color"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-                    
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/inputAddress"
                         android:hint="@string/address"
@@ -131,7 +131,7 @@
                     app:startIconDrawable="@android:drawable/ic_menu_edit"
                     app:boxStrokeColor="@color/primary_color"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-                    
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/inputNotes"
                         android:hint="@string/notes"

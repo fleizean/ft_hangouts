@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
-    android:id="@+id/action_toggle_simulation"
-    android:title="@string/start_simulation"
-    android:orderInCategory="100"
-    app:showAsAction="never" />
-    
+        android:id="@+id/action_import_contacts"
+        android:title="Rehberden Kişileri İçe Aktar"
+        android:icon="@android:drawable/ic_menu_my_calendar"
+        android:orderInCategory="30"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_import_sms"
+        android:title="SMS'leri İçe Aktar"
+        android:icon="@android:drawable/ic_menu_upload"
+        android:orderInCategory="50"
+        app:showAsAction="never" />
+
     <item
         android:id="@+id/action_change_color"
         android:title="@string/change_toolbar_color"
