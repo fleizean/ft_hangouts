@@ -25,7 +25,6 @@
 *.kotlin_builtins
 
 # Android specific
-*.apk
 *.aab
 *.ap_
 *.jks
