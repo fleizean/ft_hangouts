@@ -60,25 +60,10 @@
     <string name="color_green">Yeşil</string>
     <string name="color_red">Kırmızı</string>
     <string name="last_background">Son arkaplanda kalma zamanı</string>
-    <string name="start_simulation">Mesaj Simülasyonunu Başlat</string>
-    <string name="stop_simulation">Mesaj Simülasyonunu Durdur</string>
-    <string name="simulation_started">Rastgele mesaj simülasyonu başlatıldı. İlk mesaj %1$d saniye içinde gelecek.</string>
-    <string name="simulation_stopped">Rastgele mesaj simülasyonu durduruldu.</string>
     <string name="auto_created">Otomatik oluşturuldu: </string>
     <string name="new_message_received">%1$s numarasından yeni bir mesaj aldınız.</string>
     <string name="notification_title">Yeni Mesaj: %1$s</string>
 
-    <!-- Simülasyon mesaj içerikleri -->
-    <string name="sim_message_1">Merhaba, nasılsın?</string>
-    <string name="sim_message_2">İyi günler, sizinle konuşabilir miyim?</string>
-    <string name="sim_message_3">Acil dönüş yapabilir misiniz?</string>
-    <string name="sim_message_4">Bu numaraya ulaşabiliyorsunuz değil mi?</string>
-    <string name="sim_message_5">Selam, ben yeni bir numara!</string>
-    <string name="sim_message_6">Merhaba, tanışabilir miyiz?</string>
-    <string name="sim_message_7">İyi akşamlar, önemli bir konu hakkında görüşmemiz gerekiyor.</string>
-    <string name="sim_message_8">Merhaba, bir bilgi almak istiyorum.</string>
-    <string name="sim_message_9">Selamlar, nasıl yardımcı olabilirim?</string>
-    <string name="sim_message_10">Merhaba, daha önce görüşmüş müydük?</string>
 
     <!-- Bildirim kanalı tanımlamaları -->
     <string name="notification_channel_name">Mesaj Bildirimleri</string>
@@ -92,8 +77,6 @@
     <string name="typing_indicator">yazıyor...</string>
     <string name="default_contact_name">Kişi</string>
 
-    <!-- Simülasyon menü öğesi -->
-    <string name="simulate_message">Yeni Mesaj Simülasyonu</string>
     <string name="call_permission_title">Arama İzni Gerekli</string>
     <string name="call_permission_message">Kişiyi doğrudan aramak için telefon izni gerekiyor.</string>
     <string name="grant_permission">İzin Ver</string>
