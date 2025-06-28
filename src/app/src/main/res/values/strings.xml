@@ -35,7 +35,6 @@
    
     <!-- Added strings from provided files -->
     <string name="change_toolbar_color">Change Toolbar Color</string>
-    <string name="add_new_contact">Add New Contact</string>
     <string name="my_contacts">My Contacts</string>
     <string name="item_contact_text">Contact Name</string>
     <string name="item_contact_last_msg">The last message will appear here...</string>

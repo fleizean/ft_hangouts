@@ -35,7 +35,6 @@
    
     <!-- Added strings from provided files -->
     <string name="change_toolbar_color">Araç Çubuğu Rengini Değiştir</string>
-    <string name="add_new_contact">Yeni Kişi Ekle</string>
     <string name="my_contacts">Kişilerim</string>
     <string name="save">Kaydet</string>
     <string name="item_contact_text">Kişi Adı</string>
