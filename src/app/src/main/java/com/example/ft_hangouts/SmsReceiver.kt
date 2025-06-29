@@ -39,7 +39,10 @@ class SmsReceiver : BroadcastReceiver() {
     }
 
     private fun saveSmsToDatabase(context: Context, phoneNumber: String?, messageBody: String) {
-        if (phoneNumber == null) return
+        if (phoneNumber == null || phoneNumber.isBlank()) {
+            Log.w(TAG, "Phone number is null or empty, skipping")
+            return
+        }
 
         val dbHelper = DBHelper(context)
         val db = dbHelper.writableDatabase
@@ -53,10 +56,7 @@ class SmsReceiver : BroadcastReceiver() {
             if (contactId == null) {
                 Log.d(TAG, "No existing contact found, creating new contact")
                 // Kişi yoksa yeni kişi oluştur
-                contactId = createNewContact(
-                    db, phoneNumber,
-                    context = TODO()
-                )
+                contactId = createNewContact(db, phoneNumber, context)
             } else {
                 Log.d(TAG, "Found existing contact with ID: $contactId")
             }
@@ -69,24 +69,32 @@ class SmsReceiver : BroadcastReceiver() {
                     put("message", messageBody)
                     put("sender", "other")
                     put("timestamp", timestamp)
+                    put("read_status", 0) // Gelen mesaj okunmamış olarak işaretle
                 }
 
-                db.insert("messages", null, messageValues)
-                Log.d(TAG, "SMS saved to database for contact ID: $contactId")
+                val messageId = db.insert("messages", null, messageValues)
+                if (messageId != -1L) {
+                    Log.d(TAG, "SMS saved to database for contact ID: $contactId, message ID: $messageId")
+                } else {
+                    Log.e(TAG, "Failed to save SMS to database")
+                }
+            } else {
+                Log.e(TAG, "Failed to create or find contact")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error saving SMS: ${e.message}")
+            Log.e(TAG, "Error saving SMS: ${e.message}", e)
         } finally {
             db.close()
         }
     }
 
-    private fun createNewContact(db: SQLiteDatabase, phoneNumber: String,context: Context
-    ): Long? {
+    private fun createNewContact(db: SQLiteDatabase, phoneNumber: String, context: Context): Long? {
         // Telefon numarasını temizle ve düzenle
         val cleanNumber = PhoneNumberMatcher.normalizePhoneNumber(phoneNumber)
         val displayNumber = formatPhoneForDisplay(phoneNumber)
         val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
+        Log.d(TAG, "Creating new contact: Original=$phoneNumber, Clean=$cleanNumber, Display=$displayNumber")
 
         val contactValues = ContentValues().apply {
             put("name", displayNumber) // Güzel formatlanmış numarayı isim olarak kullan
@@ -97,8 +105,13 @@ class SmsReceiver : BroadcastReceiver() {
         }
 
         val newRowId = db.insert("contacts", null, contactValues)
-        Log.d(TAG, "Created new contact with ID: $newRowId for number: $phoneNumber")
-        return if (newRowId != -1L) newRowId else null
+        if (newRowId != -1L) {
+            Log.d(TAG, "Created new contact with ID: $newRowId for number: $phoneNumber")
+            return newRowId
+        } else {
+            Log.e(TAG, "Failed to create new contact for number: $phoneNumber")
+            return null
+        }
     }
 
     private fun formatPhoneForDisplay(phoneNumber: String): String {
@@ -115,7 +128,37 @@ class SmsReceiver : BroadcastReceiver() {
     }
 
     private fun showSmsNotification(context: Context, phoneNumber: String?, messageBody: String) {
+        // Kişi adını bulmaya çalış
+        val senderName = if (!phoneNumber.isNullOrEmpty()) {
+            findContactName(context, phoneNumber) ?: formatPhoneForDisplay(phoneNumber)
+        } else {
+            "Bilinmeyen"
+        }
+
         // NotificationHelper kullanarak bildirim göster
-        NotificationHelper.showSmsNotification(context, phoneNumber ?: "Bilinmeyen", messageBody)
+        NotificationHelper.showSmsNotification(context, senderName, messageBody)
+    }
+
+    private fun findContactName(context: Context, phoneNumber: String): String? {
+        val dbHelper = DBHelper(context)
+        val db = dbHelper.readableDatabase
+        
+        try {
+            val contactId = PhoneNumberMatcher.findMatchingContactAdvanced(db, phoneNumber)
+            if (contactId != null) {
+                val cursor = db.rawQuery("SELECT name FROM contacts WHERE id = ?", arrayOf(contactId.toString()))
+                cursor.use { c ->
+                    if (c.moveToFirst()) {
+                        return c.getString(c.getColumnIndexOrThrow("name"))
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error finding contact name: ${e.message}")
+        } finally {
+            db.close()
+        }
+        
+        return null
     }
 }
