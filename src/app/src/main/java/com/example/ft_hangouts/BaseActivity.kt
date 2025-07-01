@@ -1,4 +1,4 @@
-package com.example.ft_hangouts
+package com.example.hangly
 
 import android.content.Context
 import android.os.Bundle
@@ -22,21 +22,21 @@ open class BaseActivity : AppCompatActivity() {
     }
     
     open fun applyToolbarColor(toolbar: Toolbar) {
-        val sharedPreferences = getSharedPreferences("ft_hangouts_prefs", Context.MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences("hangly_prefs", Context.MODE_PRIVATE)
         val colorResId = sharedPreferences.getInt("toolbar_color", R.color.purple_500)
         toolbar.setBackgroundColor(getColor(colorResId))
         window.statusBarColor = getColor(colorResId)
     }
     
     protected fun saveToolbarColor(colorResId: Int) {
-        val sharedPreferences = getSharedPreferences("ft_hangouts_prefs", Context.MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences("hangly_prefs", Context.MODE_PRIVATE)
         sharedPreferences.edit().putInt("toolbar_color", colorResId).apply()
     }
     
     // Uygulamanın arka plana gittiğini kaydet
     override fun onStop() {
         super.onStop()
-        val sharedPreferences = getSharedPreferences("ft_hangouts_prefs", Context.MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences("hangly_prefs", Context.MODE_PRIVATE)
         sharedPreferences.edit().putLong("last_background_time", System.currentTimeMillis()).apply()
     }
 }

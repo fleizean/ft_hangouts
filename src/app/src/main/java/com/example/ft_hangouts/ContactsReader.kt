@@ -1,4 +1,4 @@
-package com.example.ft_hangouts
+package com.example.hangly
 
 import android.Manifest
 import android.content.ContentResolver
@@ -32,7 +32,7 @@ class ContactsReader(private val context: Context) {
     }
 
     /**
-     * Sistem rehberinden tüm kişileri çeker ve ft_hangouts veritabanına aktarır
+     * Sistem rehberinden tüm kişileri çeker ve hangly veritabanına aktarır
      */
     fun importSystemContacts(): ImportResult {
         if (!hasContactsPermission()) {

@@ -1,4 +1,4 @@
-package com.example.ft_hangouts
+package com.example.hangly
 
 import org.junit.Test
 

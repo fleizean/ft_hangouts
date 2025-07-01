@@ -1,4 +1,4 @@
-package com.example.ft_hangouts.ui.theme
+package com.example.hangly.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

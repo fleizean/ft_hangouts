@@ -1,8 +1,8 @@
-# ft_hangouts
+# hangly
 #### Score: 125/125
 
 ## Overview
-ft_hangouts is a mobile application developed with Kotlin, replicating basic messaging functionality similar to popular messaging services. This project is part of the 42 curriculum, designed to explore mobile development concepts using Kotlin programming language and Android frameworks.
+hangly is a mobile application developed with Kotlin, replicating basic messaging functionality similar to popular messaging services. This project is part of the 42 curriculum, designed to explore mobile development concepts using Kotlin programming language and Android frameworks.
 
 ## Features
 - **Contact Management**: Create, edit, and delete contacts with their name, phone number, and optional photo
@@ -20,11 +20,11 @@ ft_hangouts is a mobile application developed with Kotlin, replicating basic mes
 ## Installation & Usage
 1. Clone this repository
 ```bash
-git clone https://github.com/fleizean/ft_hangouts.git
+git clone https://github.com/fleizean/hangly.git
 ```
 2. Open the project in Android Studio
 ```bash
-cd ft_hangouts
+cd hangly
 ```
 3. Build and run the application in the Android Emulator or on a physical device
 

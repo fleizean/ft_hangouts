@@ -1,4 +1,4 @@
-package com.example.ft_hangouts
+package com.example.hangly
 
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log

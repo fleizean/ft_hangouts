@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ft_hangouts</string>
+    <string name="app_name">hangly</string>
     <string name="add_contact">Kişi Ekle</string>
     <string name="edit_contact">Kişiyi Düzenle</string>
     <string name="contact_details">Kişi Detayları</string>

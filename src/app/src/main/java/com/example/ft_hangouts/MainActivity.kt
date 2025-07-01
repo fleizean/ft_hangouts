@@ -1,4 +1,4 @@
-package com.example.ft_hangouts
+package com.example.hangly
 
 import android.Manifest
 import android.app.AlertDialog
@@ -50,7 +50,7 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        sharedPreferences = getSharedPreferences("ft_hangouts_prefs", Context.MODE_PRIVATE)
+        sharedPreferences = getSharedPreferences("hangly_prefs", Context.MODE_PRIVATE)
 
         toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -205,7 +205,7 @@ class MainActivity : BaseActivity() {
         super.onResume()
         loadContacts()
 
-        val prefs = getSharedPreferences("ft_hangouts_prefs", Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences("hangly_prefs", Context.MODE_PRIVATE)
         val lastTime = prefs.getLong("last_background_time", 0)
         val now = System.currentTimeMillis()
 

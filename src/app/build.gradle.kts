@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.ft_hangouts"
+    namespace = "com.example.hangly"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.ft_hangouts"
+        applicationId = "com.example.hangly"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -18,9 +18,19 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("my-release-key.keystore")  // app klasöründeyse direkt dosya adı olur
+            storePassword = "41653ns"          // keytool ile oluştururken verdiğin keystore şifresi
+            keyAlias = "my-key-alias"                     // keytool komutundaki alias (my-key-alias)
+            keyPassword = "41653ns"                  // keytool ile oluştururken belirttiğin key password (genelde aynı olur)
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

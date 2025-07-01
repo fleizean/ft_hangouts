@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ft_hangouts"
+rootProject.name = "hangly"
 include(":app")

@@ -1,4 +1,4 @@
-package com.example.ft_hangouts
+package com.example.hangly
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
