@@ -38,6 +38,9 @@ class EnhancedContactAdapter(
 
             // Profil fotoğrafı
             if (!c.image.isNullOrEmpty()) {
+                if (c.phone.startsWith("CORP_")) {
+                    nameText.text = "${c.name} 🏢"
+                }
                 try {
                     val imageUri = Uri.parse(c.image)
                     profileImage.setImageURI(imageUri)

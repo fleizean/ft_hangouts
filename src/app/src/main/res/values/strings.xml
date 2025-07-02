@@ -140,5 +140,10 @@
     <string name="auto_created_from_sms">Automatically imported from SMS: %1$s</string>
     <string name="date_range_not_implemented">Date range import not yet implemented</string>
 
+    <string name="corporate_sender">Corporate Sender</string>
+    <string name="cannot_call_corporate">This is a corporate sender, calling is not available</string>
+    <string name="auto_created_corporate">Automatically created from corporate SMS: %1$s</string>
+    <string name="cannot_sms_corporate">You cannot send SMS to corporate senders</string>
+    <string name="corporate_number">Corporate Number</string>
 
 </resources>

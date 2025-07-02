@@ -87,6 +87,11 @@ class ChatActivity : BaseActivity() {
             return
         }
 
+        if (contactPhone.startsWith("CORP_")) {
+            Toast.makeText(this, getString(R.string.cannot_sms_corporate), Toast.LENGTH_SHORT).show()
+            return
+        }
+
         if (contactPhone.isEmpty()) {
             Toast.makeText(this, getString(R.string.no_valid_phone), Toast.LENGTH_SHORT).show()
             return

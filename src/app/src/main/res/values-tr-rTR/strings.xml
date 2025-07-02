@@ -141,5 +141,10 @@
     <string name="auto_created_from_sms">SMS\'lerden otomatik aktarıldı: %1$s</string>
     <string name="date_range_not_implemented">Tarih aralığı aktarımı henüz implement edilmedi</string>
 
+    <string name="corporate_sender">Kurumsal Gönderici</string>
+    <string name="cannot_call_corporate">Bu kurumsal bir gönderici, arama yapılamaz</string>
+    <string name="auto_created_corporate">Kurumsal SMS\'lerden otomatik oluşturuldu: %1$s</string>
+    <string name="cannot_sms_corporate">Kurumsal gönderenlere SMS gönderemezsiniz</string>
+    <string name="corporate_number">Kurumsal Numara</string>
 
 </resources>

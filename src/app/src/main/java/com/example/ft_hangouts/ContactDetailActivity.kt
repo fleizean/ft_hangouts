@@ -99,6 +99,21 @@ class ContactDetailActivity : BaseActivity() {
     private fun loadContactDetails(id: Int) {
         val db = dbHelper.readableDatabase
         val cursor: Cursor = db.rawQuery("SELECT * FROM contacts WHERE id = ?", arrayOf(id.toString()))
+
+        phoneNumber = cursor.getString(cursor.getColumnIndexOrThrow("phone"))
+        phoneView.text = phoneNumber
+
+        val callButton = findViewById<Button>(R.id.buttonCall)
+        if (phoneNumber.startsWith("CORP_")) {
+            callButton.isEnabled = false
+            callButton.text = getString(R.string.corporate_number)
+            callButton.alpha = 0.5f
+        } else {
+            callButton.isEnabled = true
+            callButton.text = getString(R.string.call_button)
+            callButton.alpha = 1.0f
+        }
+
         
         if (cursor.moveToFirst()) {
             nameView.text = cursor.getString(cursor.getColumnIndexOrThrow("name"))
@@ -155,6 +170,10 @@ class ContactDetailActivity : BaseActivity() {
     private fun requestCallPermissionAndDial() {
         try {
             // İzin kontrolü
+            if (phoneNumber.startsWith("CORP_")) {
+                Toast.makeText(this, "Bu kurumsal bir gönderici, arama yapılamaz", Toast.LENGTH_SHORT).show()
+                return
+            }
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                 // İzin verilmemişse iste
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CALL_PHONE)) {

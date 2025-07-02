@@ -14,6 +14,64 @@ import java.util.concurrent.ConcurrentHashMap  // Add this import
 
 class SmsReceiver : BroadcastReceiver() {
 
+    enum class SenderType {
+        PHONE_NUMBER,    // Normal telefon numarası
+        ALPHANUMERIC,    // Kurumsal/alfanümerik gönderici
+        OTHER,           // Diğer formatlar
+        UNKNOWN          // Bilinmeyen
+    }
+
+
+    object SenderAddressHandler {
+    
+    /**
+     * Gönderici adresinin türünü belirler
+     */
+    fun getSenderType(address: String?): SenderType {
+        if (address.isNullOrBlank()) return SenderType.UNKNOWN
+        
+        return when {
+            // Sadece rakam ve +, - karakterleri içeriyorsa telefon numarası
+            address.matches(Regex("^[+\\-0-9\\s()]+$")) -> SenderType.PHONE_NUMBER
+            // Harf içeriyorsa alfanümerik (kurumsal)
+            address.matches(Regex(".*[a-zA-Z].*")) -> SenderType.ALPHANUMERIC
+            // Diğer durumlar
+            else -> SenderType.OTHER
+        }
+    }
+    
+    /**
+     * Kurumsal gönderici için kişi adı oluşturur
+     */
+    fun createCorporateName(address: String): String {
+        return when (address.uppercase()) {
+            "SAMSUNG" -> "Samsung Türkiye"
+            "TEB" -> "TEB Bankası"
+            "ZIRAAT" -> "Ziraat Bankası"
+            "HALKBANK" -> "Halkbank"
+            "ISBANK" -> "İş Bankası"
+            "GARANTI" -> "Garanti BBVA"
+            "AKBANK" -> "Akbank"
+            "VAKIFBANK" -> "Vakıfbank"
+            "YAPI" -> "Yapı Kredi"
+            "FINANSBANK" -> "QNB Finansbank"
+            "TURKCELL" -> "Turkcell"
+            "VODAFONE" -> "Vodafone"
+            "BIMCELL", "BİMCELL" -> "BiP"
+            else -> address.uppercase() // Bilinmeyen kurumlar için büyük harfle
+        }
+    }
+    
+    /**
+     * Alfanümerik gönderici için telefon numarası placeholder'ı
+     */
+    fun getPlaceholderPhone(address: String): String {
+        // Alfanümerik gönderenler için özel format
+        return "CORP_${address.uppercase()}"
+    }
+}
+
+
     companion object {
         private const val TAG = "SmsReceiver"
         // Çoklu SMS mesajlarını geçici olarak saklayacak harita
@@ -151,55 +209,145 @@ class SmsReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun saveSmsToDatabase(context: Context, phoneNumber: String?, messageBody: String) {
-        if (phoneNumber == null || phoneNumber.isBlank() || messageBody.isBlank()) {
-            Log.w(TAG, "Phone number or message body is null/empty, skipping")
-            return
-        }
-
-        val dbHelper = DBHelper(context)
-        val db = dbHelper.writableDatabase
-
-        try {
-            Log.d(TAG, "Processing SMS from: $phoneNumber, Length: ${messageBody.length}")
-
-            // Önce mevcut kişilerde bu numara var mı kontrol et
-            var contactId = PhoneNumberMatcher.findMatchingContactAdvanced(db, phoneNumber)
-
-            if (contactId == null) {
-                Log.d(TAG, "No existing contact found, creating new contact")
-                // Kişi yoksa yeni kişi oluştur
-                contactId = createNewContact(db, phoneNumber, context)
-            } else {
-                Log.d(TAG, "Found existing contact with ID: $contactId")
-            }
-
-            if (contactId != null) {
-                // Mesajı kaydet
-                val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
-                val messageValues = ContentValues().apply {
-                    put("contact_id", contactId)
-                    put("message", messageBody)
-                    put("sender", "other")
-                    put("timestamp", timestamp)
-                    put("read_status", 0) // Gelen mesaj okunmamış olarak işaretle
-                }
-
-                val messageId = db.insert("messages", null, messageValues)
-                if (messageId != -1L) {
-                    Log.d(TAG, "SMS saved to database for contact ID: $contactId, message ID: $messageId, Full message length: ${messageBody.length}")
-                } else {
-                    Log.e(TAG, "Failed to save SMS to database")
-                }
-            } else {
-                Log.e(TAG, "Failed to create or find contact")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error saving SMS: ${e.message}", e)
-        } finally {
-            db.close()
-        }
+    private fun saveSmsToDatabase(context: Context, senderAddress: String?, messageBody: String) {
+    if (senderAddress.isNullOrBlank() || messageBody.isBlank()) {
+        Log.w(TAG, "Sender address or message body is null/empty, skipping")
+        return
     }
+
+    val dbHelper = DBHelper(context)
+    val db = dbHelper.writableDatabase
+
+    try {
+        val senderType = SenderAddressHandler.getSenderType(senderAddress)
+        Log.d(TAG, "Processing SMS from: $senderAddress, Type: $senderType, Length: ${messageBody.length}")
+
+        val contactId = when (senderType) {
+            SenderType.PHONE_NUMBER -> {
+                // Normal telefon numarası - mevcut mantığı kullan
+                handlePhoneNumberSender(db, senderAddress, context)
+            }
+            SenderType.ALPHANUMERIC -> {
+                // Kurumsal gönderici - özel mantık
+                handleAlphanumericSender(db, senderAddress, context)
+            }
+            else -> {
+                // Diğer durumlar için de alfanümerik mantığını kullan
+                handleAlphanumericSender(db, senderAddress, context)
+            }
+        }
+
+        if (contactId != null) {
+            // Mesajı kaydet
+            val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+            val messageValues = ContentValues().apply {
+                put("contact_id", contactId)
+                put("message", messageBody)
+                put("sender", "other")
+                put("timestamp", timestamp)
+                put("read_status", 0)
+                put("message_length", messageBody.length)
+            }
+
+            val messageId = db.insert("messages", null, messageValues)
+            if (messageId != -1L) {
+                Log.d(TAG, "SMS saved to database for contact ID: $contactId")
+            } else {
+                Log.e(TAG, "Failed to save SMS to database")
+            }
+        } else {
+            Log.e(TAG, "Failed to create or find contact for: $senderAddress")
+        }
+    } catch (e: Exception) {
+        Log.e(TAG, "Error saving SMS: ${e.message}", e)
+    } finally {
+        db.close()
+    }
+}
+
+private fun handlePhoneNumberSender(db: SQLiteDatabase, phoneNumber: String, context: Context): Long? {
+    // Mevcut telefon numarası mantığını kullan
+    var contactId = PhoneNumberMatcher.findMatchingContactAdvanced(db, phoneNumber)
+    
+    if (contactId == null) {
+        contactId = createNewPhoneContact(db, phoneNumber, context)
+    }
+    
+    return contactId
+}
+
+private fun handleAlphanumericSender(db: SQLiteDatabase, address: String, context: Context): Long? {
+    // Önce bu alfanümerik gönderici zaten var mı kontrol et
+    val placeholderPhone = SenderAddressHandler.getPlaceholderPhone(address)
+    
+    val cursor = db.rawQuery(
+        "SELECT id FROM contacts WHERE phone = ? OR name = ?", 
+        arrayOf(placeholderPhone, SenderAddressHandler.createCorporateName(address))
+    )
+    
+    var contactId: Long? = null
+    if (cursor.moveToFirst()) {
+        contactId = cursor.getLong(cursor.getColumnIndexOrThrow("id"))
+        Log.d(TAG, "Found existing corporate contact: $contactId for $address")
+    }
+    cursor.close()
+    
+    // Yoksa yeni kurumsal kişi oluştur
+    if (contactId == null) {
+        contactId = createNewCorporateContact(db, address, context)
+    }
+    
+    return contactId
+}
+
+private fun createNewPhoneContact(db: SQLiteDatabase, phoneNumber: String, context: Context): Long? {
+    // Mevcut createNewContact metodunu kullan
+    val cleanNumber = PhoneNumberMatcher.normalizePhoneNumber(phoneNumber)
+    val displayNumber = formatPhoneForDisplay(phoneNumber)
+    val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
+    val contactValues = ContentValues().apply {
+        put("name", displayNumber)
+        put("phone", phoneNumber)
+        put("email", "")
+        put("address", "")
+        put("notes", context.getString(R.string.auto_created_from_sms, timestamp))
+    }
+
+    val newRowId = db.insert("contacts", null, contactValues)
+    if (newRowId != -1L) {
+        Log.d(TAG, "Created new phone contact with ID: $newRowId for number: $phoneNumber")
+        return newRowId
+    }
+    return null
+}
+
+private fun createNewCorporateContact(db: SQLiteDatabase, address: String, context: Context): Long? {
+    val corporateName = SenderAddressHandler.createCorporateName(address)
+    val placeholderPhone = SenderAddressHandler.getPlaceholderPhone(address)
+    val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
+    Log.d(TAG, "Creating new corporate contact: $corporateName for address: $address")
+
+    val contactValues = ContentValues().apply {
+        put("name", corporateName)
+        put("phone", placeholderPhone) // Özel format: CORP_SAMSUNG
+        put("email", "")
+        put("address", "")
+        put("notes", context.getString(R.string.auto_created_from_sms, timestamp) + " (Kurumsal)")
+    }
+
+    val newRowId = db.insert("contacts", null, contactValues)
+    if (newRowId != -1L) {
+        Log.d(TAG, "Created new corporate contact with ID: $newRowId for address: $address")
+        return newRowId
+    } else {
+        Log.e(TAG, "Failed to create corporate contact for address: $address")
+        return null
+    }
+}
+
+
 
     private fun createNewContact(db: SQLiteDatabase, phoneNumber: String, context: Context): Long? {
         // Telefon numarasını temizle ve düzenle
