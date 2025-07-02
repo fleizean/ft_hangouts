@@ -10,11 +10,55 @@ import androidx.core.content.ContextCompat
 import java.text.SimpleDateFormat
 import java.util.*
 import android.content.ContentValues
+import android.database.sqlite.SQLiteDatabase
+
 
 class SmsReader(private val context: Context) {
 
     companion object {
         private const val TAG = "SmsReader"
+    }
+
+    enum class SenderType {
+        PHONE_NUMBER,
+        ALPHANUMERIC,
+        OTHER,
+        UNKNOWN
+    }
+
+    object SenderAddressHandler {
+        fun getSenderType(address: String?): SenderType {
+            if (address.isNullOrBlank()) return SenderType.UNKNOWN
+            
+            return when {
+                address.matches(Regex("^[+\\-0-9\\s()]+$")) -> SenderType.PHONE_NUMBER
+                address.matches(Regex(".*[a-zA-Z].*")) -> SenderType.ALPHANUMERIC
+                else -> SenderType.OTHER
+            }
+        }
+        
+        fun createCorporateName(address: String): String {
+            return when (address.uppercase()) {
+                "SAMSUNG" -> "Samsung Türkiye"
+                "TEB" -> "TEB Bankası"
+                "ZIRAAT" -> "Ziraat Bankası"
+                "HALKBANK" -> "Halkbank"
+                "ISBANK" -> "İş Bankası"
+                "GARANTI" -> "Garanti BBVA"
+                "AKBANK" -> "Akbank"
+                "VAKIFBANK" -> "Vakıfbank"
+                "YAPI" -> "Yapı Kredi"
+                "FINANSBANK" -> "QNB Finansbank"
+                "TURKCELL" -> "Turkcell"
+                "VODAFONE" -> "Vodafone"
+                "BIMCELL", "BİMCELL" -> "BiP"
+                else -> address.uppercase()
+            }
+        }
+        
+        fun getPlaceholderPhone(address: String): String {
+            return "CORP_${address.uppercase()}"
+        }
     }
 
     private val dbHelper = DBHelper(context)
@@ -62,6 +106,8 @@ class SmsReader(private val context: Context) {
         }
     }
 
+    // SmsReader.kt - importSmsFromUri metodunu düzelt
+
     private fun importSmsFromUri(uri: Uri, senderType: String): ImportCounts {
         val cursor = context.contentResolver.query(
             uri,
@@ -74,7 +120,7 @@ class SmsReader(private val context: Context) {
             ),
             null,
             null,
-            "${Telephony.Sms.DATE} DESC LIMIT 3000" // Son 1000 SMS
+            "${Telephony.Sms.DATE} DESC LIMIT 3000"
         )
 
         var imported = 0
@@ -83,26 +129,45 @@ class SmsReader(private val context: Context) {
         cursor?.use { c ->
             while (c.moveToNext()) {
                 try {
-                    val address = c.getString(c.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)) ?: continue
-                    val body = c.getString(c.getColumnIndexOrThrow(Telephony.Sms.BODY)) ?: continue
+                    val address = c.getString(c.getColumnIndexOrThrow(Telephony.Sms.ADDRESS))
+                    val body = c.getString(c.getColumnIndexOrThrow(Telephony.Sms.BODY))
                     val date = c.getLong(c.getColumnIndexOrThrow(Telephony.Sms.DATE))
 
-                    // Telefon numarasını temizle
-                    val cleanAddress = cleanPhoneNumber(address)
+                    // Null/boş kontrolleri
+                    if (body.isNullOrBlank()) {
+                        Log.w(TAG, "Skipping SMS with empty body")
+                        skipped++
+                        continue
+                    }
+
+                    if (address.isNullOrBlank()) {
+                        Log.w(TAG, "Skipping SMS with empty address")
+                        skipped++
+                        continue
+                    }
+
+                    Log.d(TAG, "Processing SMS from: '$address', Body length: ${body.length}")
 
                     // Kişi var mı kontrol et, yoksa oluştur
-                    val contactId = getOrCreateContact(cleanAddress)
+                    val contactId = getOrCreateContactFromAddress(address)
 
-                    // Bu mesaj zaten var mı kontrol et
-                    if (!messageExists(contactId, body, date)) {
-                        // Mesajı kaydet
-                        val success = saveImportedMessage(contactId, body, senderType, date)
-                        if (success) {
-                            imported++
+                    if (contactId > 0) {
+                        // Bu mesaj zaten var mı kontrol et
+                        if (!messageExists(contactId, body, date)) {
+                            // Mesajı kaydet
+                            val success = saveImportedMessage(contactId, body, senderType, date)
+                            if (success) {
+                                imported++
+                                Log.d(TAG, "Imported SMS from: $address")
+                            } else {
+                                skipped++
+                            }
                         } else {
                             skipped++
+                            Log.d(TAG, "SMS already exists from: $address")
                         }
                     } else {
+                        Log.w(TAG, "Failed to create contact for: $address")
                         skipped++
                     }
 
@@ -115,6 +180,100 @@ class SmsReader(private val context: Context) {
 
         return ImportCounts(imported, skipped)
     }
+
+    private fun getOrCreateContactFromAddress(address: String): Long {
+        val db = dbHelper.writableDatabase
+
+        return try {
+            val senderType = SenderAddressHandler.getSenderType(address)
+            Log.d(TAG, "Address: '$address', Type: $senderType")
+
+            when (senderType) {
+                SenderType.PHONE_NUMBER -> {
+                    // Normal telefon numarası
+                    getOrCreatePhoneContact(address, db)
+                }
+                SenderType.ALPHANUMERIC -> {
+                    // Kurumsal gönderici (SAMSUNG, TEB, vb.)
+                    getOrCreateCorporateContact(address, db)
+                }
+                else -> {
+                    // Diğer durumlar - alfanümerik olarak işle
+                    getOrCreateCorporateContact(address, db)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in getOrCreateContactFromAddress: ${e.message}")
+            -1L
+        }
+    }
+
+    private fun getOrCreateCorporateContact(address: String, db: SQLiteDatabase): Long {
+        val corporateName = SenderAddressHandler.createCorporateName(address)
+        val placeholderPhone = SenderAddressHandler.getPlaceholderPhone(address)
+
+        // Önce bu kurumsal gönderici zaten var mı kontrol et
+        val cursor = db.rawQuery(
+            "SELECT id FROM contacts WHERE phone = ? OR name = ?", 
+            arrayOf(placeholderPhone, corporateName)
+        )
+        
+        var contactId: Long = -1
+        if (cursor.moveToFirst()) {
+            contactId = cursor.getLong(cursor.getColumnIndexOrThrow("id"))
+            Log.d(TAG, "Found existing corporate contact: $contactId for $address")
+        }
+        cursor.close()
+        
+        // Yoksa yeni kurumsal kişi oluştur
+        if (contactId == -1L) {
+            Log.d(TAG, "Creating new corporate contact: $corporateName for address: $address")
+            val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
+            val values = ContentValues().apply {
+                put("name", corporateName)
+                put("phone", placeholderPhone) // CORP_SAMSUNG gibi
+                put("email", "")
+                put("address", "")
+                put("notes", context.getString(R.string.auto_created_from_sms, timestamp) + " (Kurumsal)")
+            }
+
+            contactId = db.insert("contacts", null, values)
+            if (contactId != -1L) {
+                Log.d(TAG, "Created new corporate contact with ID: $contactId")
+            }
+        }
+        
+        return contactId
+    }
+
+
+    private fun getOrCreatePhoneContact(phoneNumber: String, db: SQLiteDatabase): Long {
+        // Önce mevcut kişilerde bu numara var mı kontrol et
+        var contactId = PhoneNumberMatcher.findMatchingContactAdvanced(db, phoneNumber)
+
+        if (contactId != null) {
+            Log.d(TAG, "Found existing phone contact with ID: $contactId for number: $phoneNumber")
+            return contactId
+        }
+
+        // Kişi yoksa yeni oluştur
+        Log.d(TAG, "Creating new phone contact for number: $phoneNumber")
+        val displayNumber = formatPhoneForDisplay(phoneNumber)
+        val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
+        val values = ContentValues().apply {
+            put("name", displayNumber)
+            put("phone", phoneNumber)
+            put("email", "")
+            put("address", "")
+            put("notes", context.getString(R.string.auto_created_from_sms, timestamp))
+        }
+
+        return db.insert("contacts", null, values)
+    }
+
+
 
     private fun cleanPhoneNumber(phone: String): String {
         // Telefon numarasını temizle (+90, boşluk, tire vb. kaldır)

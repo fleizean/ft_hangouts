@@ -11,6 +11,7 @@ import androidx.appcompat.widget.Toolbar
 import android.widget.Toast
 import android.content.Intent
 import android.app.Activity
+import android.util.Log
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -99,49 +100,67 @@ class ContactDetailActivity : BaseActivity() {
     private fun loadContactDetails(id: Int) {
         val db = dbHelper.readableDatabase
         val cursor: Cursor = db.rawQuery("SELECT * FROM contacts WHERE id = ?", arrayOf(id.toString()))
-
-        phoneNumber = cursor.getString(cursor.getColumnIndexOrThrow("phone"))
-        phoneView.text = phoneNumber
-
-        val callButton = findViewById<Button>(R.id.buttonCall)
-        if (phoneNumber.startsWith("CORP_")) {
-            callButton.isEnabled = false
-            callButton.text = getString(R.string.corporate_number)
-            callButton.alpha = 0.5f
-        } else {
-            callButton.isEnabled = true
-            callButton.text = getString(R.string.call_button)
-            callButton.alpha = 1.0f
-        }
-
         
-        if (cursor.moveToFirst()) {
-            nameView.text = cursor.getString(cursor.getColumnIndexOrThrow("name"))
-            // Telefon numarasını alıp değişkene atayalım (arama için)
-            phoneNumber = cursor.getString(cursor.getColumnIndexOrThrow("phone"))
-            phoneView.text = phoneNumber
-            emailView.text = cursor.getString(cursor.getColumnIndexOrThrow("email"))
-            addressView.text = cursor.getString(cursor.getColumnIndexOrThrow("address"))
-            notesView.text = cursor.getString(cursor.getColumnIndexOrThrow("notes"))
-            
-            // Profil fotoğrafını göster (eğer 'image' sütunu varsa)
-            try {
-                val contactImage = findViewById<ImageView>(R.id.contactImage)
-                val imageUri = cursor.getString(cursor.getColumnIndexOrThrow("image"))
-                if (imageUri != null && imageUri.isNotEmpty()) {
-                    contactImage.setImageURI(Uri.parse(imageUri))
+        try {
+            if (cursor.moveToFirst()) {
+                // Önce isim ve telefon numarasını al
+                val contactName = cursor.getString(cursor.getColumnIndexOrThrow("name"))
+                phoneNumber = cursor.getString(cursor.getColumnIndexOrThrow("phone")) ?: ""
+                
+                // UI'ı güncelle
+                nameView.text = contactName
+                phoneView.text = phoneNumber
+                emailView.text = cursor.getString(cursor.getColumnIndexOrThrow("email")) ?: ""
+                addressView.text = cursor.getString(cursor.getColumnIndexOrThrow("address")) ?: ""
+                notesView.text = cursor.getString(cursor.getColumnIndexOrThrow("notes")) ?: ""
+                
+                // Kurumsal numara kontrolü ve arama butonu ayarları
+                val callButton = findViewById<Button>(R.id.buttonCall)
+                if (phoneNumber.startsWith("CORP_")) {
+                    callButton.isEnabled = false
+                    callButton.text = getString(R.string.corporate_number)
+                    callButton.alpha = 0.5f
+                    
+                    // Log için
+                    Log.d("ContactDetail", "Corporate contact detected: $contactName, Phone: $phoneNumber")
                 } else {
+                    callButton.isEnabled = true
+                    callButton.text = getString(R.string.call_button)
+                    callButton.alpha = 1.0f
+                }
+                
+                // Profil fotoğrafını göster
+                try {
+                    val contactImage = findViewById<ImageView>(R.id.contactImage)
+                    val imageUri = cursor.getString(cursor.getColumnIndexOrThrow("image"))
+                    if (imageUri != null && imageUri.isNotEmpty()) {
+                        contactImage.setImageURI(Uri.parse(imageUri))
+                    } else {
+                        contactImage.setImageResource(R.drawable.default_profile)
+                    }
+                } catch (e: Exception) {
+                    Log.w("ContactDetail", "Image column might not exist: ${e.message}")
+                    // Default profile image ayarla
+                    val contactImage = findViewById<ImageView>(R.id.contactImage)
                     contactImage.setImageResource(R.drawable.default_profile)
                 }
-            } catch (e: Exception) {
-                // Eğer image sütunu henüz eklenmemiş olabilir, hata mesajı göstermek yerine sessizce devam et
+                
+            } else {
+                // Kişi bulunamadı
+                Log.e("ContactDetail", "Contact not found with ID: $id")
+                nameView.text = getString(R.string.contact_not_found_message)
+                phoneNumber = ""
             }
-        } else {
-            // Kişi bulunamadı
-            nameView.text = getString(R.string.contact_not_found_message)
+        } catch (e: Exception) {
+            Log.e("ContactDetail", "Error loading contact details: ${e.message}", e)
+            nameView.text = getString(R.string.error)
+            phoneNumber = ""
+        } finally {
+            cursor.close()
+            db.close()
         }
-        cursor.close()
     }
+
     
     private fun showDeleteConfirmation() {
         AlertDialog.Builder(this)
