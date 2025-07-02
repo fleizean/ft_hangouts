@@ -12,14 +12,16 @@ import androidx.core.app.NotificationManagerCompat
 object NotificationHelper {
 
     private const val CHANNEL_ID = "sms_channel"
-    private const val CHANNEL_NAME = "SMS Notifications"
-    private const val CHANNEL_DESCRIPTION = "Notifications for incoming SMS messages"
 
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance).apply {
-                description = CHANNEL_DESCRIPTION
+            val channel = NotificationChannel(
+                CHANNEL_ID, 
+                context.getString(R.string.notification_channel_name), 
+                importance
+            ).apply {
+                description = context.getString(R.string.notification_channel_description)
             }
 
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -42,7 +44,7 @@ object NotificationHelper {
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("Yeni SMS: $senderName")
+            .setContentTitle(context.getString(R.string.notification_sms_title, senderName))
             .setContentText(messageBody.take(50) + if (messageBody.length > 50) "..." else "")
             .setStyle(NotificationCompat.BigTextStyle().bigText(messageBody))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

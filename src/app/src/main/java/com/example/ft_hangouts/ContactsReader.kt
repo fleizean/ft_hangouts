@@ -36,7 +36,7 @@ class ContactsReader(private val context: Context) {
      */
     fun importSystemContacts(): ImportResult {
         if (!hasContactsPermission()) {
-            return ImportResult(false, 0, "Rehber okuma izni verilmedi")
+            return ImportResult(false, 0, context.getString(R.string.contacts_permission_denied))
         }
 
         var importedCount = 0
@@ -66,12 +66,12 @@ class ContactsReader(private val context: Context) {
             return ImportResult(
                 true,
                 importedCount,
-                "Başarıyla tamamlandı. $importedCount kişi aktarıldı, $skippedCount kişi zaten mevcut."
+                context.getString(R.string.contacts_import_success, importedCount, skippedCount)
             )
 
         } catch (e: Exception) {
             Log.e(TAG, "Error importing contacts: ${e.message}")
-            return ImportResult(false, 0, "Hata: ${e.message}")
+            return ImportResult(false, 0, context.getString(R.string.contacts_import_error, e.message))
         }
     }
 

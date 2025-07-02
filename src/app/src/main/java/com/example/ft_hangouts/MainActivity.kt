@@ -162,14 +162,14 @@ class MainActivity : BaseActivity() {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     importExistingSms()
                 } else {
-                    Toast.makeText(this, "SMS okuma izni olmadan mevcut mesajları içe aktaramazsınız", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, getString(R.string.sms_read_permission_denied), Toast.LENGTH_LONG).show()
                 }
             }
             CONTACTS_READ_PERMISSION_REQUEST -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     importSystemContacts()
                 } else {
-                    Toast.makeText(this, "Rehber okuma izni olmadan kişileri içe aktaramazsınız", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, getString(R.string.contacts_read_permission_denied), Toast.LENGTH_LONG).show()
                 }
             }
             SMS_PERMISSION_REQUEST -> {
@@ -182,14 +182,14 @@ class MainActivity : BaseActivity() {
                 }
 
                 if (allPermissionsGranted) {
-                    Toast.makeText(this, "SMS izinleri verildi", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.sms_permissions_granted_toast), Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "SMS izinleri olmadan mesajlaşma özelliği çalışmaz", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, getString(R.string.sms_permissions_required), Toast.LENGTH_LONG).show()
                 }
             }
             REQUEST_NOTIFICATION_PERMISSION -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, "Bildirim izni verildi", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.notification_permission_granted), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -264,12 +264,12 @@ class MainActivity : BaseActivity() {
 
     private fun showImportContactsDialog() {
         AlertDialog.Builder(this)
-            .setTitle("Rehberden Kişileri İçe Aktar")
-            .setMessage("Telefonunuzun rehberindeki kişileri uygulamaya aktarmak istiyor musunuz?")
-            .setPositiveButton("Aktar") { _, _ ->
+            .setTitle(getString(R.string.import_contacts_title))
+            .setMessage(getString(R.string.import_contacts_message))
+            .setPositiveButton(getString(R.string.import_button)) { _, _ ->
                 importSystemContacts()
             }
-            .setNegativeButton("İptal", null)
+            .setNegativeButton(getString(R.string.cancel_button), null)
             .show()
     }
 
@@ -287,7 +287,7 @@ class MainActivity : BaseActivity() {
         }
 
         val progressDialog = ProgressDialog(this).apply {
-            setMessage("Rehber kişileri aktarılıyor...")
+            setMessage(getString(R.string.importing_contacts))
             setCancelable(false)
             show()
         }
@@ -299,9 +299,9 @@ class MainActivity : BaseActivity() {
                 progressDialog.dismiss()
 
                 AlertDialog.Builder(this)
-                    .setTitle(if (result.success) "Başarılı" else "Hata")
+                    .setTitle(if (result.success) getString(R.string.success) else getString(R.string.error_title))
                     .setMessage(result.message)
-                    .setPositiveButton("Tamam") { _, _ ->
+                    .setPositiveButton(getString(R.string.ok_button)) { _, _ ->
                         if (result.success && result.importedCount > 0) {
                             loadContacts()
                         }
@@ -313,12 +313,12 @@ class MainActivity : BaseActivity() {
 
     private fun showImportSmsDialog() {
         AlertDialog.Builder(this)
-            .setTitle("SMS'leri İçe Aktar")
-            .setMessage("Telefonunuzdaki mevcut SMS'leri uygulamaya aktarmak istiyor musunuz? Bu işlem biraz zaman alabilir.")
-            .setPositiveButton("Aktar") { _, _ ->
+            .setTitle(getString(R.string.import_sms_title))
+            .setMessage(getString(R.string.import_sms_message))
+            .setPositiveButton(getString(R.string.import_button)) { _, _ ->
                 importExistingSms()
             }
-            .setNegativeButton("İptal", null)
+            .setNegativeButton(getString(R.string.cancel_button), null)
             .show()
     }
 
@@ -336,7 +336,7 @@ class MainActivity : BaseActivity() {
         }
 
         val progressDialog = ProgressDialog(this).apply {
-            setMessage("SMS'ler aktarılıyor...")
+            setMessage(getString(R.string.importing_sms))
             setCancelable(false)
             show()
         }
@@ -348,9 +348,9 @@ class MainActivity : BaseActivity() {
                 progressDialog.dismiss()
 
                 AlertDialog.Builder(this)
-                    .setTitle(if (result.success) "Başarılı" else "Hata")
+                    .setTitle(if (result.success) getString(R.string.success) else getString(R.string.error_title))
                     .setMessage(result.message)
-                    .setPositiveButton("Tamam") { _, _ ->
+                    .setPositiveButton(getString(R.string.ok_button)) { _, _ ->
                         if (result.success && result.importedCount > 0) {
                             loadContacts()
                         }

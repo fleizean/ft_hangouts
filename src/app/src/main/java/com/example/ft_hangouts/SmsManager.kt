@@ -31,23 +31,23 @@ class SmsManagerHelper(private val context: Context) {
             when (resultCode) {
                 Activity.RESULT_OK -> {
                     Log.d(TAG, "SMS sent successfully")
-                    Toast.makeText(context, "SMS gönderildi", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.sms_sent), Toast.LENGTH_SHORT).show()
                 }
                 SmsManager.RESULT_ERROR_GENERIC_FAILURE -> {
                     Log.e(TAG, "Generic failure")
-                    Toast.makeText(context, "SMS gönderilemedi: Genel hata", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.sms_send_error_generic), Toast.LENGTH_SHORT).show()
                 }
                 SmsManager.RESULT_ERROR_NO_SERVICE -> {
                     Log.e(TAG, "No service")
-                    Toast.makeText(context, "SMS gönderilemedi: Servis yok", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.sms_send_error_no_service), Toast.LENGTH_SHORT).show()
                 }
                 SmsManager.RESULT_ERROR_NULL_PDU -> {
                     Log.e(TAG, "Null PDU")
-                    Toast.makeText(context, "SMS gönderilemedi: Null PDU", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.sms_send_error_null_pdu), Toast.LENGTH_SHORT).show()
                 }
                 SmsManager.RESULT_ERROR_RADIO_OFF -> {
                     Log.e(TAG, "Radio off")
-                    Toast.makeText(context, "SMS gönderilemedi: Radio kapalı", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.sms_send_error_radio_off), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -58,11 +58,11 @@ class SmsManagerHelper(private val context: Context) {
             when (resultCode) {
                 Activity.RESULT_OK -> {
                     Log.d(TAG, "SMS delivered")
-                    Toast.makeText(context, "SMS teslim edildi", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.sms_delivered), Toast.LENGTH_SHORT).show()
                 }
                 Activity.RESULT_CANCELED -> {
                     Log.d(TAG, "SMS not delivered")
-                    Toast.makeText(context, "SMS teslim edilemedi", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.sms_not_delivered), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -151,7 +151,7 @@ class SmsManagerHelper(private val context: Context) {
 
         } catch (e: Exception) {
             Log.e(TAG, "Error sending SMS: ${e.message}")
-            Toast.makeText(context, "SMS gönderilirken hata: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.sms_error, e.message), Toast.LENGTH_LONG).show()
             return false
         }
     }

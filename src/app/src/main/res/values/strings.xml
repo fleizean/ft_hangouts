@@ -38,7 +38,6 @@
     <string name="my_contacts">My Contacts</string>
     <string name="item_contact_text">Contact Name</string>
     <string name="item_contact_last_msg">The last message will appear here...</string>
-    <string name="auto_created_from_sms">Automatically created from SMS: %1$s</string>
     <string name="imported_from_contacts">Imported from system contacts: %1$s</string>
     <string name="no_messages_yet">No messages yet</string>
     <string name="save">Save</string>
@@ -65,8 +64,6 @@
     <string name="notification_title">New Message: %1$s</string>
 
     <!-- Notification channel definitions -->
-    <string name="notification_channel_name">Message Notifications</string>
-    <string name="notification_channel_description">Notifications for incoming messages</string>
     <string name="take_photo">Take Photo</string>
     <string name="select_image_source">Select Image Source</string>
     <string name="permissions_required">Permissions must be granted to add a photo</string>
@@ -99,5 +96,49 @@
     <string name="add_photo">Add Photo</string>
     <string name="contact_photo">Contact Photo</string>
     <string name="profile_image">Profile Image</string>
+
+    <string name="long_message_parts">Long message (%1$d characters) will be sent in %2$d parts</string>
+    <string name="sms_permissions_granted">SMS permissions granted</string>
+    <string name="sms_permissions_denied">SMS permissions denied. Cannot send messages.</string>
+
+    <string name="contacts_permission_denied">Contact reading permission not granted</string>
+    <string name="contacts_import_success">Successfully completed. %1$d contacts imported, %2$d contacts already exist.</string>
+    <string name="contacts_import_error">Error: %1$s</string>
+
+    <string name="contacts_read_permission_denied">You cannot import contacts without contacts reading permission</string>
+    <string name="sms_permissions_granted_toast">SMS permissions granted</string>
+    <string name="sms_permissions_required">SMS permissions are required for messaging functionality</string>
+    <string name="notification_permission_granted">Notification permission granted</string>
+    <string name="import_contacts_title">Import Contacts from Address Book</string>
+    <string name="import_contacts_message">Do you want to import contacts from your phone\'s address book to the app?</string>
+    <string name="import_button">Import</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="importing_contacts">Importing contacts...</string>
+    <string name="success">Success</string>
+    <string name="error_title">Error</string>
+    <string name="ok_button">OK</string>
+    <string name="import_sms_title">Import SMS Messages</string>
+    <string name="import_sms_message">Do you want to import existing SMS messages from your phone? This process may take some time.</string>
+    <string name="importing_sms">Importing SMS messages...</string>
+
+    <string name="notification_sms_title">Message from %1$s</string>
+    <string name="notification_channel_name">SMS Notifications</string>
+    <string name="notification_channel_description">Notifications for incoming SMS messages</string>
+
+    <string name="sms_sent">SMS sent</string>
+    <string name="sms_send_error_generic">SMS not sent: Generic error</string>
+    <string name="sms_send_error_no_service">SMS not sent: No service</string>
+    <string name="sms_send_error_null_pdu">SMS not sent: Null PDU</string>
+    <string name="sms_send_error_radio_off">SMS not sent: Radio off</string>
+    <string name="sms_delivered">SMS delivered</string>
+    <string name="sms_not_delivered">SMS not delivered</string>
+    <string name="sms_error">Error sending SMS: %1$s</string>
+
+    <string name="sms_read_permission_denied">SMS reading permission not granted</string>
+    <string name="sms_import_success_result">Successfully completed. %1$d SMS imported, %2$d SMS already exist.</string>
+    <string name="sms_import_error_result">Error: %1$s</string>
+    <string name="auto_created_from_sms">Automatically imported from SMS: %1$s</string>
+    <string name="date_range_not_implemented">Date range import not yet implemented</string>
+
 
 </resources>

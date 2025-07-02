@@ -31,7 +31,7 @@ class SmsReader(private val context: Context) {
      */
     fun importAllSms(): ImportResult {
         if (!hasReadSmsPermission()) {
-            return ImportResult(false, 0, "SMS okuma izni verilmedi")
+            return ImportResult(false, 0, context.getString(R.string.sms_read_permission_denied))
         }
 
         var importedCount = 0
@@ -53,12 +53,12 @@ class SmsReader(private val context: Context) {
             return ImportResult(
                 true,
                 importedCount,
-                "Başarıyla tamamlandı. $importedCount SMS aktarıldı, $skippedCount SMS zaten mevcut."
+                context.getString(R.string.sms_import_success_result, importedCount, skippedCount)
             )
 
         } catch (e: Exception) {
             Log.e(TAG, "Error importing SMS: ${e.message}")
-            return ImportResult(false, 0, "Hata: ${e.message}")
+            return ImportResult(false, 0, context.getString(R.string.sms_import_error_result, e.message))
         }
     }
 
@@ -74,7 +74,7 @@ class SmsReader(private val context: Context) {
             ),
             null,
             null,
-            "${Telephony.Sms.DATE} DESC LIMIT 1000" // Son 1000 SMS
+            "${Telephony.Sms.DATE} DESC LIMIT 3000" // Son 1000 SMS
         )
 
         var imported = 0
@@ -136,13 +136,14 @@ class SmsReader(private val context: Context) {
         Log.d(TAG, "Creating new contact for number: $phoneNumber")
         val displayNumber = formatPhoneForDisplay(phoneNumber)
 
+        val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
         val values = ContentValues().apply {
             put("name", displayNumber) // Güzel formatlanmış numarayı isim olarak kullan
             put("phone", phoneNumber) // Orijinal numarayı telefon olarak kaydet
             put("email", "")
             put("address", "")
-            put("notes", "SMS'lerden otomatik aktarıldı: " +
-                    SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date()))
+            put("notes", context.getString(R.string.auto_created_from_sms, timestamp))
         }
 
         return db.insert("contacts", null, values)
@@ -201,7 +202,7 @@ class SmsReader(private val context: Context) {
      */
     fun importSmsFromDateRange(startDate: Date, endDate: Date): ImportResult {
         if (!hasReadSmsPermission()) {
-            return ImportResult(false, 0, "SMS okuma izni verilmedi")
+            return ImportResult(false, 0, context.getString(R.string.sms_read_permission_denied))
         }
 
         val startTime = startDate.time
@@ -212,7 +213,7 @@ class SmsReader(private val context: Context) {
 
         // Implementation buraya eklenebilir...
 
-        return ImportResult(true, 0, "Tarih aralığı aktarımı henüz implement edilmedi")
+        return ImportResult(true, 0, context.getString(R.string.date_range_not_implemented))
     }
 }
 

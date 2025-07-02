@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Button
+import android.util.Log
 import android.widget.EditText
 import android.widget.ListView
 import android.widget.TextView
@@ -30,6 +31,8 @@ class ChatActivity : BaseActivity() {
 
     companion object {
         private const val SMS_PERMISSION_REQUEST = 101
+        private const val TAG = "ChatActivity"
+        private const val MAX_SMS_LENGTH = 160 // Standard SMS uzunluğu
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,13 +83,25 @@ class ChatActivity : BaseActivity() {
         val messageText = messageInput.text.toString().trim()
 
         if (messageText.isEmpty()) {
-            Toast.makeText(this, "Mesaj boş olamaz", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.message_empty), Toast.LENGTH_SHORT).show()
             return
         }
 
         if (contactPhone.isEmpty()) {
-            Toast.makeText(this, "Geçerli telefon numarası bulunamadı", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.no_valid_phone), Toast.LENGTH_SHORT).show()
             return
+        }
+
+        val messageLength = messageText.length
+        Log.d(TAG, "Sending message of length: $messageLength")
+
+        if (messageLength > MAX_SMS_LENGTH) {
+            val partsCount = kotlin.math.ceil(messageLength.toDouble() / MAX_SMS_LENGTH).toInt()
+            Toast.makeText(
+                this, 
+                getString(R.string.long_message_parts, messageLength, partsCount), 
+                Toast.LENGTH_LONG
+            ).show()
         }
 
         // SMS izinlerini kontrol et
@@ -108,7 +123,7 @@ class ChatActivity : BaseActivity() {
             // Mesajları yeniden yükle
             loadMessages()
         } else {
-            Toast.makeText(this, "SMS gönderilemedi", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.message_failed), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -121,6 +136,7 @@ class ChatActivity : BaseActivity() {
             put("message", messageText)
             put("sender", "me")
             put("timestamp", currentTime)
+            put("message_length", messageText.length)
         }
 
         db.insert("messages", null, values)
@@ -129,17 +145,24 @@ class ChatActivity : BaseActivity() {
     private fun loadMessages() {
         messageList.clear()
         val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery(
-            "SELECT * FROM messages WHERE contact_id = ? ORDER BY id ASC",
-            arrayOf(contactId.toString())
-        )
+        val cursor = db.rawQuery("""
+            SELECT message, sender, timestamp, 
+                   COALESCE(message_length, LENGTH(message)) as calculated_length
+            FROM messages 
+            WHERE contact_id = ? 
+            ORDER BY id ASC
+        """, arrayOf(contactId.toString()))
+
 
         while (cursor.moveToNext()) {
             val message = cursor.getString(cursor.getColumnIndexOrThrow("message"))
             val sender = cursor.getString(cursor.getColumnIndexOrThrow("sender"))
             val timestamp = cursor.getString(cursor.getColumnIndexOrThrow("timestamp"))
+            val messageLength = cursor.getInt(cursor.getColumnIndexOrThrow("calculated_length"))
 
-            messageList.add(Message(message, sender, timestamp))
+            messageList.add(Message(message, sender, timestamp, messageLength))
+            
+            Log.d(TAG, "Loaded message: sender=$sender, length=$messageLength, preview=${message.take(50)}...")
         }
 
         cursor.close()
@@ -164,9 +187,9 @@ class ChatActivity : BaseActivity() {
             }
 
             if (allPermissionsGranted) {
-                Toast.makeText(this, "SMS izinleri verildi", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.sms_permissions_granted), Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "SMS izinleri reddedildi. Mesaj gönderilemez.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, getString(R.string.sms_permissions_denied), Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -185,7 +208,7 @@ class ChatActivity : BaseActivity() {
     }
 
     // Message sınıfı ve MessageAdapter'ı buraya ekle (önceki kodla aynı)
-    data class Message(val text: String, val sender: String, val timestamp: String)
+    data class Message(val text: String, val sender: String, val timestamp: String, val length: Int = text.length)
 
     inner class MessageAdapter : android.widget.ArrayAdapter<Message>(
         this@ChatActivity,
@@ -200,18 +223,34 @@ class ChatActivity : BaseActivity() {
             val messageTime = view.findViewById<TextView>(R.id.messageTime)
             val messageLayout = view.findViewById<android.widget.LinearLayout>(R.id.messageLayout)
 
-            messageText.text = message?.text
-            messageTime.text = message?.timestamp?.substring(11, 16)
+            message?.let { msg ->
+                messageText.text = msg.text
+                
+                // Zaman formatına mesaj uzunluğunu da ekle (debug için)
+                val timeDisplay = if (msg.length > MAX_SMS_LENGTH) {
+                    "${msg.timestamp.substring(11, 16)} (${msg.length}ch)"
+                } else {
+                    msg.timestamp.substring(11, 16)
+                }
+                messageTime.text = timeDisplay
 
-            val container = view.findViewById<android.widget.LinearLayout>(R.id.container)
-            if (message?.sender == "me") {
-                messageLayout.setBackgroundResource(R.drawable.message_sent_background)
-                messageText.setTextColor(getColor(R.color.white))
-                container.gravity = android.view.Gravity.END
-            } else {
-                messageLayout.setBackgroundResource(R.drawable.message_received_background)
-                messageText.setTextColor(getColor(R.color.black))
-                container.gravity = android.view.Gravity.START
+                val container = view.findViewById<android.widget.LinearLayout>(R.id.container)
+                if (msg.sender == "me") {
+                    messageLayout.setBackgroundResource(R.drawable.message_sent_background)
+                    messageText.setTextColor(getColor(R.color.white))
+                    container.gravity = android.view.Gravity.END
+                } else {
+                    messageLayout.setBackgroundResource(R.drawable.message_received_background)
+                    messageText.setTextColor(getColor(R.color.black))
+                    container.gravity = android.view.Gravity.START
+                }
+
+                // Uzun mesajlar için görsel ipucu
+                if (msg.length > MAX_SMS_LENGTH) {
+                    messageLayout.alpha = 0.9f // Hafif şeffaflık
+                } else {
+                    messageLayout.alpha = 1.0f
+                }
             }
 
             return view
