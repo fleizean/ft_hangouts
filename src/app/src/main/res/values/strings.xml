@@ -32,6 +32,9 @@
     <string name="message_empty">Message cannot be empty!</string>
     <string name="message_error">An error occurred while sending the message!</string>
     <string name="message_not_found">Message not found!</string>
+    <string name="action_import_contact">Import Contacts</string>
+    <string name="action_import_sms">Import SMS</string>
+
    
     <!-- Added strings from provided files -->
     <string name="change_toolbar_color">Change Toolbar Color</string>
