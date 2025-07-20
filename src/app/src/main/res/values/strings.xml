@@ -149,4 +149,24 @@
     <string name="cannot_sms_corporate">You cannot send SMS to corporate senders</string>
     <string name="corporate_number">Corporate Number</string>
 
+    <!-- Permission explanation strings -->
+    <string name="sms_permission_explanation_title">SMS Permissions Required</string>
+    <string name="sms_permission_explanation_message">This app needs SMS permissions to send and receive text messages. Without these permissions, messaging functionality will not work.</string>
+    <string name="sms_permissions_required_for_functionality">SMS permissions are required for full functionality</string>
+    <string name="sms_basic_permissions_granted">Basic SMS permissions granted</string>
+    <string name="sms_read_permission_optional_info">SMS read permission is optional but recommended for importing existing messages</string>
+    <string name="notification_permission_denied_info">Notification permission denied. You may not receive message notifications.</string>
+    
+    <!-- Permission denied messages -->
+    <string name="permission_denied_title">Permission Denied</string>
+    <string name="sms_read_permission_denied_message">SMS reading permission is required to import existing messages. You can grant this permission later in app settings.</string>
+    <string name="contacts_read_permission_denied_message">Contacts reading permission is required to import your address book. You can grant this permission later in app settings.</string>
+    <string name="sms_permission_denied_details">The following SMS permissions were denied: %1$s. Some features may not work properly.</string>
+    
+    <!-- Permission action buttons -->
+    <string name="retry_permissions">Retry Permissions</string>
+    <string name="continue_limited">Continue with Limited Features</string>
+    <string name="limited_functionality_warning">Some features will be limited without full permissions</string>
+    <string name="cannot_open_settings">Cannot open app settings</string>
+
 </resources>

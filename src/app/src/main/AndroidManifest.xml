@@ -2,23 +2,41 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.hangly">
 
+    <!-- Kamera izinleri -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
+    
+    <!-- Storage izinleri - API seviyesine göre -->
+    <!-- Android 13+ için media izinleri -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    
+    <!-- Android 12 ve altı için storage izinleri -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
+        android:maxSdkVersion="29" />
+    
+    <!-- Telefon izinleri -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
+    
+    <!-- Bildirim izinleri -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    
+    <!-- SMS izinleri -->
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    
+    <!-- Rehber izinleri -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
+    <!-- MMS desteği (opsiyonel) -->
     <uses-permission android:name="android.permission.RECEIVE_MMS" />
     <uses-permission android:name="android.permission.BROADCAST_SMS" />
 
-
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
-    <uses-feature
-        android:name="android.hardware.telephony"
+    <!-- Donanım özellikleri - opsiyonel olarak işaretle -->
+    <uses-feature android:name="android.hardware.camera" 
+        android:required="false" />
+    <uses-feature android:name="android.hardware.telephony" 
         android:required="false" />
 
     <application
@@ -84,8 +102,7 @@
             android:exported="true"
             android:permission="android.permission.BROADCAST_SMS">
             
-            <!-- SMS_RECEIVED için yüksek öncelikli filter -->
-            <intent-filter android:priority="2147483647">
+           <intent-filter android:priority="2147483647">
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
             
@@ -94,14 +111,9 @@
                 <action android:name="android.provider.Telephony.WAP_PUSH_RECEIVED" />
                 <data android:mimeType="application/vnd.wap.mms-message" />
             </intent-filter>
-            
-            <!-- SMS_DELIVER için filter -->
-            <intent-filter android:priority="1000">
-                <action android:name="android.provider.Telephony.SMS_DELIVER" />
-            </intent-filter>
         </receiver>
 
-        <provider
+         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"

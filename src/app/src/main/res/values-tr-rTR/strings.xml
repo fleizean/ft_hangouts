@@ -149,4 +149,23 @@
     <string name="cannot_sms_corporate">Kurumsal gönderenlere SMS gönderemezsiniz</string>
     <string name="corporate_number">Kurumsal Numara</string>
 
+    <string name="sms_permission_explanation_title">SMS İzinleri Gerekli</string>
+    <string name="sms_permission_explanation_message">Bu uygulama mesaj gönderip almak için SMS izinlerine ihtiyaç duyar. Bu izinler olmadan mesajlaşma özelliği çalışmaz.</string>
+    <string name="sms_permissions_required_for_functionality">Tam işlevsellik için SMS izinleri gereklidir</string>
+    <string name="sms_basic_permissions_granted">Temel SMS izinleri verildi</string>
+    <string name="sms_read_permission_optional_info">SMS okuma izni opsiyoneldir ancak mevcut mesajları içe aktarmak için önerilir</string>
+    <string name="notification_permission_denied_info">Bildirim izni reddedildi. Mesaj bildirimleri alamayabilirsiniz.</string>
+    
+    <!-- Permission denied messages -->
+    <string name="permission_denied_title">İzin Reddedildi</string>
+    <string name="sms_read_permission_denied_message">Mevcut mesajları içe aktarmak için SMS okuma izni gereklidir. Bu izni daha sonra uygulama ayarlarından verebilirsiniz.</string>
+    <string name="contacts_read_permission_denied_message">Rehberinizi içe aktarmak için rehber okuma izni gereklidir. Bu izni daha sonra uygulama ayarlarından verebilirsiniz.</string>
+    <string name="sms_permission_denied_details">Şu SMS izinleri reddedildi: %1$s. Bazı özellikler düzgün çalışmayabilir.</string>
+    
+    <!-- Permission action buttons -->
+    <string name="retry_permissions">İzinleri Tekrar Dene</string>
+    <string name="continue_limited">Sınırlı Özelliklerle Devam Et</string>
+    <string name="limited_functionality_warning">Tam izinler olmadan bazı özellikler sınırlı olacak</string>
+    <string name="cannot_open_settings">Uygulama ayarları açılamıyor</string>
+
 </resources>

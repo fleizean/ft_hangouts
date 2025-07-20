@@ -18,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
@@ -118,11 +119,44 @@ class MainActivity : BaseActivity() {
     }
 
     private fun checkSmsPermissions() {
-        val smsManagerHelper = SmsManagerHelper(this)
-        if (!smsManagerHelper.checkSmsPermissions()) {
+    val smsManagerHelper = SmsManagerHelper(this)
+    if (!smsManagerHelper.checkSmsPermissions()) {
+        // İzin eksikse kullanıcıya açıklama göster
+        if (shouldShowSmsPermissionRationale()) {
+            showSmsPermissionExplanationDialog()
+        } else {
             smsManagerHelper.requestSmsPermissions(this)
         }
     }
+}
+
+private fun shouldShowSmsPermissionRationale(): Boolean {
+    return ActivityCompat.shouldShowRequestPermissionRationale(
+        this, Manifest.permission.SEND_SMS
+    ) || ActivityCompat.shouldShowRequestPermissionRationale(
+        this, Manifest.permission.RECEIVE_SMS
+    ) || ActivityCompat.shouldShowRequestPermissionRationale(
+        this, Manifest.permission.READ_SMS
+    )
+}
+
+private fun showSmsPermissionExplanationDialog() {
+    AlertDialog.Builder(this)
+        .setTitle(getString(R.string.sms_permission_explanation_title))
+        .setMessage(getString(R.string.sms_permission_explanation_message))
+        .setPositiveButton(getString(R.string.grant_permission)) { _, _ ->
+            val smsManagerHelper = SmsManagerHelper(this)
+            smsManagerHelper.requestSmsPermissions(this)
+        }
+        .setNegativeButton(getString(R.string.cancel_button)) { dialog, _ ->
+            dialog.dismiss()
+            Toast.makeText(this, getString(R.string.sms_permissions_required_for_functionality), Toast.LENGTH_LONG).show()
+        }
+        .setCancelable(false)
+        .show()
+}
+
+
 
     private fun setupContactList() {
         enhancedAdapter = EnhancedContactAdapter(this, contactsWithMessages)
@@ -155,45 +189,108 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        when (requestCode) {
-            SMS_READ_PERMISSION_REQUEST -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    importExistingSms()
-                } else {
-                    Toast.makeText(this, getString(R.string.sms_read_permission_denied), Toast.LENGTH_LONG).show()
-                }
+    when (requestCode) {
+        SMS_READ_PERMISSION_REQUEST -> {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                importExistingSms()
+            } else {
+                showPermissionDeniedDialog(getString(R.string.sms_read_permission_denied_message))
             }
-            CONTACTS_READ_PERMISSION_REQUEST -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    importSystemContacts()
-                } else {
-                    Toast.makeText(this, getString(R.string.contacts_read_permission_denied), Toast.LENGTH_LONG).show()
-                }
+        }
+        CONTACTS_READ_PERMISSION_REQUEST -> {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                importSystemContacts()
+            } else {
+                showPermissionDeniedDialog(getString(R.string.contacts_read_permission_denied_message))
             }
-            SMS_PERMISSION_REQUEST -> {
-                var allPermissionsGranted = true
-                for (result in grantResults) {
-                    if (result != PackageManager.PERMISSION_GRANTED) {
-                        allPermissionsGranted = false
-                        break
+        }
+        SMS_PERMISSION_REQUEST -> {
+            // Tüm SMS izinlerini kontrol et
+            val permissionResults = mutableMapOf<String, Boolean>()
+            for (i in permissions.indices) {
+                permissionResults[permissions[i]] = grantResults[i] == PackageManager.PERMISSION_GRANTED
+            }
+
+            val sendSmsGranted = permissionResults[Manifest.permission.SEND_SMS] ?: false
+            val receiveSmsGranted = permissionResults[Manifest.permission.RECEIVE_SMS] ?: false
+            val readSmsGranted = permissionResults[Manifest.permission.READ_SMS] ?: false
+            
+            // Android 13+ için notification izni kontrolü
+            val notificationGranted = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                permissionResults[Manifest.permission.POST_NOTIFICATIONS] ?: true // Eski sürümlerde varsayılan true
+            } else {
+                true
+            }
+
+            when {
+                sendSmsGranted && receiveSmsGranted && readSmsGranted && notificationGranted -> {
+                    Toast.makeText(this, getString(R.string.sms_permissions_granted_toast), Toast.LENGTH_SHORT).show()
+                }
+                sendSmsGranted && receiveSmsGranted -> {
+                    Toast.makeText(this, getString(R.string.sms_basic_permissions_granted), Toast.LENGTH_SHORT).show()
+                    if (!readSmsGranted) {
+                        Toast.makeText(this, getString(R.string.sms_read_permission_optional_info), Toast.LENGTH_LONG).show()
                     }
                 }
-
-                if (allPermissionsGranted) {
-                    Toast.makeText(this, getString(R.string.sms_permissions_granted_toast), Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this, getString(R.string.sms_permissions_required), Toast.LENGTH_LONG).show()
-                }
-            }
-            REQUEST_NOTIFICATION_PERMISSION -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, getString(R.string.notification_permission_granted), Toast.LENGTH_SHORT).show()
+                else -> {
+                    showSmsPermissionDeniedDialog(permissionResults)
                 }
             }
         }
+        REQUEST_NOTIFICATION_PERMISSION -> {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, getString(R.string.notification_permission_granted), Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, getString(R.string.notification_permission_denied_info), Toast.LENGTH_LONG).show()
+            }
+        }
     }
+}
+
+private fun showPermissionDeniedDialog(message: String) {
+    AlertDialog.Builder(this)
+        .setTitle(getString(R.string.permission_denied_title))
+        .setMessage(message)
+        .setPositiveButton(getString(R.string.go_to_settings)) { _, _ ->
+            openAppSettings()
+        }
+        .setNegativeButton(getString(R.string.ok_button), null)
+        .show()
+}
+
+private fun showSmsPermissionDeniedDialog(permissionResults: Map<String, Boolean>) {
+    val deniedPermissions = permissionResults.filter { !it.value }.keys
+    val message = getString(R.string.sms_permission_denied_details, deniedPermissions.joinToString(", "))
+    
+    AlertDialog.Builder(this)
+        .setTitle(getString(R.string.permission_denied_title))
+        .setMessage(message)
+        .setPositiveButton(getString(R.string.go_to_settings)) { _, _ ->
+            openAppSettings()
+        }
+        .setNeutralButton(getString(R.string.retry_permissions)) { _, _ ->
+            checkSmsPermissions()
+        }
+        .setNegativeButton(getString(R.string.continue_limited)) { _, _ ->
+            Toast.makeText(this, getString(R.string.limited_functionality_warning), Toast.LENGTH_LONG).show()
+        }
+        .show()
+}
+
+private fun openAppSettings() {
+    try {
+        val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+        val uri = android.net.Uri.fromParts("package", packageName, null)
+        intent.data = uri
+        startActivity(intent)
+    } catch (e: Exception) {
+        Toast.makeText(this, getString(R.string.cannot_open_settings), Toast.LENGTH_SHORT).show()
+    }
+}
+
+
 
     override fun onPause() {
         super.onPause()
@@ -202,21 +299,48 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onResume() {
-        super.onResume()
-        loadContacts()
+    super.onResume()
+    loadContacts()
 
-        val prefs = getSharedPreferences("hangly_prefs", Context.MODE_PRIVATE)
-        val lastTime = prefs.getLong("last_background_time", 0)
-        val now = System.currentTimeMillis()
+    // İzin durumunu kontrol et ve gerekirse kullanıcıyı bilgilendir
+    checkPermissionStatusOnResume()
 
-        if (lastTime > 0 && now - lastTime > 2000) {
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-            val formatted = dateFormat.format(Date(lastTime))
-            Toast.makeText(this, getString(R.string.last_background) + ": $formatted", Toast.LENGTH_LONG).show()
+    val prefs = getSharedPreferences("hangly_prefs", Context.MODE_PRIVATE)
+    val lastTime = prefs.getLong("last_background_time", 0)
+    val now = System.currentTimeMillis()
 
-            prefs.edit().putLong("last_background_time", 0).apply()
+    if (lastTime > 0 && now - lastTime > 2000) {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val formatted = dateFormat.format(Date(lastTime))
+        Toast.makeText(this, getString(R.string.last_background) + ": $formatted", Toast.LENGTH_LONG).show()
+
+        prefs.edit().putLong("last_background_time", 0).apply()
+    }
+}
+
+private fun checkPermissionStatusOnResume() {
+    val smsManagerHelper = SmsManagerHelper(this)
+    
+    // Kritik izinlerin durumunu kontrol et
+    val hasSmsPermissions = smsManagerHelper.checkSmsPermissions()
+    
+    if (!hasSmsPermissions) {
+        // SMS izinleri eksikse sessizce log'la, kullanıcıya spam yapma
+        Log.w("MainActivity", "SMS permissions not fully granted")
+    }
+    
+    // Notification permission kontrolü (Android 13+)
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+        val hasNotificationPermission = ContextCompat.checkSelfPermission(
+            this, Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+        
+        if (!hasNotificationPermission) {
+            Log.w("MainActivity", "Notification permission not granted")
         }
     }
+}
+
 
     fun refreshContactList() {
         loadContacts()

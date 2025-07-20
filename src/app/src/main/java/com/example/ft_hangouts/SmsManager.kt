@@ -25,6 +25,26 @@ class SmsManagerHelper(private val context: Context) {
 
     private val smsManager = SmsManager.getDefault()
 
+    private val REQUIRED_PERMISSIONS = when {
+        android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU -> {
+            // Android 13+ (API 33+) için
+            arrayOf(
+                Manifest.permission.SEND_SMS,
+                Manifest.permission.RECEIVE_SMS,
+                Manifest.permission.READ_SMS,
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        }
+        else -> {
+            // Android 12 ve altı için
+            arrayOf(
+                Manifest.permission.SEND_SMS,
+                Manifest.permission.RECEIVE_SMS,
+                Manifest.permission.READ_SMS
+            )
+        }
+    }
+
     // SMS gönderme durumunu dinleyen receiver'lar
     private val sentReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -69,27 +89,27 @@ class SmsManagerHelper(private val context: Context) {
     }
 
     fun checkSmsPermissions(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.SEND_SMS
-        ) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.RECEIVE_SMS
-                ) == PackageManager.PERMISSION_GRANTED
+        return REQUIRED_PERMISSIONS.all { permission ->
+            ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+        }
     }
 
+
     fun requestSmsPermissions(activity: Activity) {
-        ActivityCompat.requestPermissions(
-            activity,
-            arrayOf(
-                Manifest.permission.SEND_SMS,
-                Manifest.permission.RECEIVE_SMS,
-                Manifest.permission.READ_SMS
-            ),
-            SMS_PERMISSION_REQUEST
-        )
+        val missingPermissions = REQUIRED_PERMISSIONS.filter { permission ->
+            ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED
+        }.toTypedArray()
+
+        if (missingPermissions.isNotEmpty()) {
+            Log.d(TAG, "Requesting permissions: ${missingPermissions.joinToString()}")
+            ActivityCompat.requestPermissions(
+                activity,
+                missingPermissions,
+                SMS_PERMISSION_REQUEST
+            )
+        }
     }
+
 
     fun sendSms(phoneNumber: String, message: String): Boolean {
         if (!checkSmsPermissions()) {
@@ -98,27 +118,42 @@ class SmsManagerHelper(private val context: Context) {
         }
 
         try {
-            // PendingIntent'ler oluştur
+            // PendingIntent'ler oluştur - API seviyesine göre flag ayarı
+            val pendingIntentFlags = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            } else {
+                PendingIntent.FLAG_UPDATE_CURRENT
+            }
+
             val sentPI = PendingIntent.getBroadcast(
                 context,
                 0,
                 Intent(SMS_SENT),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                pendingIntentFlags
             )
 
             val deliveredPI = PendingIntent.getBroadcast(
                 context,
                 0,
                 Intent(SMS_DELIVERED),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                pendingIntentFlags
             )
 
-            // Receiver'ları kaydet
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                context.registerReceiver(sentReceiver, IntentFilter(SMS_SENT), Context.RECEIVER_NOT_EXPORTED)
-                context.registerReceiver(deliveredReceiver, IntentFilter(SMS_DELIVERED), Context.RECEIVER_NOT_EXPORTED)
+            // Receiver'ları kaydet - API seviyesine göre flag ayarı
+            try {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    context.registerReceiver(sentReceiver, IntentFilter(SMS_SENT), Context.RECEIVER_NOT_EXPORTED)
+                    context.registerReceiver(deliveredReceiver, IntentFilter(SMS_DELIVERED), Context.RECEIVER_NOT_EXPORTED)
+                } else {
+                    context.registerReceiver(sentReceiver, IntentFilter(SMS_SENT))
+                    context.registerReceiver(deliveredReceiver, IntentFilter(SMS_DELIVERED))
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not register receivers: ${e.message}")
+                // Receiver kayıt edilemese bile SMS göndermeyi dene
             }
 
+            // SMS gönder
             val parts = smsManager.divideMessage(message)
             if (parts.size > 1) {
                 val sentIntents = ArrayList<PendingIntent>()
@@ -146,7 +181,7 @@ class SmsManagerHelper(private val context: Context) {
                 )
             }
 
-            Log.d(TAG, "SMS send request initiated")
+            Log.d(TAG, "SMS send request initiated for: $phoneNumber")
             return true
 
         } catch (e: Exception) {
@@ -155,6 +190,7 @@ class SmsManagerHelper(private val context: Context) {
             return false
         }
     }
+
 
     fun unregisterReceivers() {
         try {

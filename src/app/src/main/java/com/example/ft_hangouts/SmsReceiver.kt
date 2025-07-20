@@ -25,45 +25,132 @@ class SmsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Log.d(TAG, "SMS received")
 
-        if (Telephony.Sms.Intents.SMS_RECEIVED_ACTION == intent.action) {
-            try {
-                val smsMessages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
+        if (intent.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) {
+            Log.w(TAG, "Unexpected action: ${intent.action}")
+            return
+        }
 
-                if (smsMessages.isNotEmpty()) {
-                    // Mesajları gönderen numaraya göre grupla
-                    val messagesBySender = smsMessages.groupBy { it.originatingAddress }
+        try {
+            // Güvenli SMS mesaj çıkarma
+            val smsMessages = extractSmsMessages(intent)
+            
+            if (smsMessages.isEmpty()) {
+                Log.w(TAG, "No SMS messages found in intent")
+                return
+            }
 
-                    for ((sender, messages) in messagesBySender) {
-                        if (sender != null) {
-                            processMessagesFromSender(context, sender, messages)
-                        }
+            // Mesajları gönderen numaraya göre grupla
+            val messagesBySender = smsMessages.groupBy { it.originatingAddress }
+
+            for ((sender, messages) in messagesBySender) {
+                if (!sender.isNullOrBlank()) {
+                    processMessagesFromSender(context, sender, messages)
+                } else {
+                    Log.w(TAG, "Sender address is null or blank")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error processing SMS: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Intent'ten SMS mesajlarını güvenli şekilde çıkarır
+     * Farklı Android sürümleri için uyumlu
+     */
+    private fun extractSmsMessages(intent: Intent): List<SmsMessage> {
+        return try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                // Android 4.4+ için modern yöntem
+                Telephony.Sms.Intents.getMessagesFromIntent(intent)?.toList() ?: emptyList()
+            } else {
+                // Eski Android sürümleri için fallback
+                extractSmsMessagesLegacy(intent)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error extracting SMS messages: ${e.message}")
+            emptyList()
+        }
+    }
+
+    /**
+     * Eski Android sürümleri için SMS çıkarma
+     */
+    private fun extractSmsMessagesLegacy(intent: Intent): List<SmsMessage> {
+        val messages = mutableListOf<SmsMessage>()
+        
+        try {
+            val pdus = intent.extras?.get("pdus") as? Array<*>
+            val format = intent.getStringExtra("format")
+            
+            pdus?.forEach { pdu ->
+                if (pdu != null) {
+                    val smsMessage = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                        SmsMessage.createFromPdu(pdu as ByteArray, format)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        SmsMessage.createFromPdu(pdu as ByteArray)
+                    }
+                    if (smsMessage != null) {
+                        messages.add(smsMessage)
                     }
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error processing SMS: ${e.message}", e)
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in legacy SMS extraction: ${e.message}")
         }
+        
+        return messages
     }
 
     private fun processMessagesFromSender(context: Context, sender: String, messages: List<SmsMessage>) {
         Log.d(TAG, "Processing ${messages.size} message(s) from: $sender")
 
-        // Eğer tek mesaj ise direkt işle
-        if (messages.size == 1 && !isMultipartMessage(messages[0])) {
-            val messageBody = messages[0].messageBody
-            Log.d(TAG, "Single message from $sender: $messageBody")
-            saveSmsToDatabase(context, sender, messageBody)
-            showSmsNotification(context, sender, messageBody)
-            return
+        try {
+            // Mesajları birleştir
+            val combinedMessage = combineMessages(messages)
+            
+            if (combinedMessage.isBlank()) {
+                Log.w(TAG, "Combined message is blank for sender: $sender")
+                return
+            }
+
+            Log.d(TAG, "Combined message from $sender: ${combinedMessage.take(50)}...")
+
+            // Veritabanına kaydet
+            saveSmsToDatabase(context, sender, combinedMessage)
+            
+            // Bildirim göster
+            showSmsNotification(context, sender, combinedMessage)
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error processing messages from $sender: ${e.message}", e)
         }
-
-        // Çoklu mesaj durumu - mesajları birleştir
-        val combinedMessage = combineMultipartMessages(messages)
-        Log.d(TAG, "Combined multipart message from $sender: $combinedMessage")
-
-        saveSmsToDatabase(context, sender, combinedMessage)
-        showSmsNotification(context, sender, combinedMessage)
     }
+
+    private fun combineMessages(messages: List<SmsMessage>): String {
+        return try {
+            // Mesajları timestamp'e göre sırala ve birleştir
+            val sortedMessages = messages.sortedBy { it.timestampMillis }
+            val combinedText = StringBuilder()
+
+            for (message in sortedMessages) {
+                val messageBody = message.messageBody
+                if (!messageBody.isNullOrBlank()) {
+                    combinedText.append(messageBody)
+                }
+            }
+
+            combinedText.toString().trim()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error combining messages: ${e.message}")
+            // Fallback - ilk mesajın body'sini döndür
+            messages.firstOrNull()?.messageBody?.trim() ?: ""
+        }
+    }
+
+
+
 
     private fun isMultipartMessage(smsMessage: SmsMessage): Boolean {
         return smsMessage.messageBody?.length ?: 0 > 160
@@ -147,29 +234,35 @@ class SmsReceiver : BroadcastReceiver() {
     }
 
     private fun handleAlphanumericSender(db: SQLiteDatabase, address: String, context: Context): Long? {
-        // Ortak SenderAddressHandler kullan
-        val placeholderPhone = SenderAddressHandler.getPlaceholderPhone(address)
-        val corporateName = SenderAddressHandler.createCorporateName(address)
+        return try {
+            // Ortak SenderAddressHandler kullan
+            val placeholderPhone = SenderAddressHandler.getPlaceholderPhone(address)
+            val corporateName = SenderAddressHandler.createCorporateName(address)
 
-        val cursor = db.rawQuery(
-            "SELECT id FROM contacts WHERE phone = ? OR name = ?",
-            arrayOf(placeholderPhone, corporateName)
-        )
+            val cursor = db.rawQuery(
+                "SELECT id FROM contacts WHERE phone = ? OR name = ?",
+                arrayOf(placeholderPhone, corporateName)
+            )
 
-        var contactId: Long? = null
-        if (cursor.moveToFirst()) {
-            contactId = cursor.getLong(cursor.getColumnIndexOrThrow("id"))
-            Log.d(TAG, "Found existing corporate contact: $contactId for $address -> $corporateName")
+            var contactId: Long? = null
+            if (cursor.moveToFirst()) {
+                contactId = cursor.getLong(cursor.getColumnIndexOrThrow("id"))
+                Log.d(TAG, "Found existing corporate contact: $contactId for $address -> $corporateName")
+            }
+            cursor.close()
+
+            // Yoksa yeni kurumsal kişi oluştur
+            if (contactId == null) {
+                contactId = createNewCorporateContact(db, address, context)
+            }
+
+            contactId
+        } catch (e: Exception) {
+            Log.e(TAG, "Error handling alphanumeric sender: ${e.message}")
+            null
         }
-        cursor.close()
-
-        // Yoksa yeni kurumsal kişi oluştur
-        if (contactId == null) {
-            contactId = createNewCorporateContact(db, address, context)
-        }
-
-        return contactId
     }
+
 
     private fun createNewPhoneContact(db: SQLiteDatabase, phoneNumber: String, context: Context): Long? {
         val cleanNumber = PhoneNumberMatcher.normalizePhoneNumber(phoneNumber)
@@ -219,30 +312,35 @@ class SmsReceiver : BroadcastReceiver() {
     }
 
     private fun showSmsNotification(context: Context, phoneNumber: String?, messageBody: String) {
-        // Ortak SenderAddressHandler kullanarak kişi adını bul
-        val senderName = if (!phoneNumber.isNullOrEmpty()) {
-            // Önce veritabanından kişi adını bul
-            val contactName = findContactName(context, phoneNumber)
-            if (contactName != null) {
-                contactName
+        try {
+            // Ortak SenderAddressHandler kullanarak kişi adını bul
+            val senderName = if (!phoneNumber.isNullOrEmpty()) {
+                // Önce veritabanından kişi adını bul
+                val contactName = findContactName(context, phoneNumber)
+                if (contactName != null) {
+                    contactName
+                } else {
+                    // Kişi bulunamadıysa, ortak handler ile display name oluştur
+                    SenderAddressHandler.getDisplayNameForNotification(phoneNumber)
+                }
             } else {
-                // Kişi bulunamadıysa, ortak handler ile display name oluştur
-                SenderAddressHandler.getDisplayNameForNotification(phoneNumber)
+                "Bilinmeyen"
             }
-        } else {
-            "Bilinmeyen"
-        }
 
-        // NotificationHelper kullanarak bildirim göster
-        val notificationText = if (messageBody.length > 100) {
-            messageBody.take(100) + "..."
-        } else {
-            messageBody
-        }
+            // NotificationHelper kullanarak bildirim göster
+            val notificationText = if (messageBody.length > 100) {
+                messageBody.take(100) + "..."
+            } else {
+                messageBody
+            }
 
-        Log.d(TAG, "Showing notification: Sender=$phoneNumber, Display=$senderName, Message preview=${notificationText.take(30)}...")
-        NotificationHelper.showSmsNotification(context, senderName, notificationText)
+            Log.d(TAG, "Showing notification: Sender=$phoneNumber, Display=$senderName")
+            NotificationHelper.showSmsNotification(context, senderName, notificationText)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error showing notification: ${e.message}")
+        }
     }
+
 
     private fun findContactName(context: Context, phoneNumber: String): String? {
         val dbHelper = DBHelper(context)

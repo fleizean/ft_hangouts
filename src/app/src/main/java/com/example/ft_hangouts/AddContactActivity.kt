@@ -127,114 +127,157 @@ class AddContactActivity : BaseActivity() {
         // Dahili depolamaya kaydedilen dosyalar için izne gerek yok
     }
 
-    private val REQUIRED_PERMISSIONS =
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-        // Android 10+ (API 29+) için
+    private val REQUIRED_PERMISSIONS = when {
+    android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
+        // Android 14+ (API 34+) için
         arrayOf(
             Manifest.permission.CAMERA,
-            Manifest.permission.READ_EXTERNAL_STORAGE // Android 10+ için de hala istiyor olabiliriz
-        )
-    } else {
-        // Android 7-9 için
-        arrayOf(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.CAMERA
+            Manifest.permission.READ_MEDIA_IMAGES
         )
     }
+    android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU -> {
+        // Android 13 (API 33) için
+        arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.READ_MEDIA_IMAGES
+        )
+    }
+    android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q -> {
+        // Android 10-12 (API 29-32) için
+        arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        )
+    }
+    else -> {
+        // Android 9 ve altı (API 28-) için
+        arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+    }
+}
+
 
     private fun setupPermissions() {
-        // İzin isteme için launcher oluştur
-        permissionLauncher =
-            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-                val cameraPermissionGranted = permissions[Manifest.permission.CAMERA] ?: false
-                val readPermissionGranted =
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                        true // Android 10+ için storage izinleri farklı şekilde işlenir
-                    } else {
-                        permissions[Manifest.permission.READ_EXTERNAL_STORAGE] ?: false
-                    }
-
-                Log.d("PermissionDebug", "Camera permission: $cameraPermissionGranted")
-                Log.d("PermissionDebug", "Storage permission: $readPermissionGranted")
-
-                if (cameraPermissionGranted && readPermissionGranted) {
-                    // İzinler tamam, seçenekleri göster
-                    showImageSourceOptionsDialog()
-                } else {
-                    // İzinler eksik, kullanıcıyı bilgilendir
-                    Toast.makeText(
-                        this,
-                        getString(R.string.permissions_required),
-                        Toast.LENGTH_SHORT
-                    ).show()
+    // İzin isteme için launcher oluştur
+    permissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val cameraPermissionGranted = permissions[Manifest.permission.CAMERA] ?: false
+            
+            // Storage izni kontrolü - API seviyesine göre
+            val storagePermissionGranted = when {
+                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU -> {
+                    permissions[Manifest.permission.READ_MEDIA_IMAGES] ?: false
+                }
+                else -> {
+                    permissions[Manifest.permission.READ_EXTERNAL_STORAGE] ?: false
                 }
             }
 
-        // Galeri launcher'ını güncelleyin
-        galleryLauncher =
-            registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-                Log.d("GalleryDebug", "Gallery result URI: $uri")
-                uri?.let {
-                    try {
-                        // Seçilen resmi uygulama depolamasına kopyala
-                        val savedUri = saveImageToInternalStorage(uri)
-                        savedUri?.let {
-                            imageUri = savedUri
-                            imageView.setImageURI(savedUri)
-                            Log.d("GalleryDebug", "Image saved to: $savedUri")
-                        } ?: run {
-                            Toast.makeText(this, getString(R.string.image_save_failed), Toast.LENGTH_SHORT).show()
-                        }
-                    } catch (e: Exception) {
-                        Log.e("GalleryDebug", "Error with image: ${e.message}", e)
-                        Toast.makeText(this, getString(R.string.image_process_error), Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
+            Log.d("PermissionDebug", "Camera: $cameraPermissionGranted, Storage: $storagePermissionGranted")
 
-        // Kamera launcher'ını güncelleyin (gerekirse)
-        cameraLauncher =
-            registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-                Log.d("CameraDebug", "Camera result success: $success, URI: $imageUri")
-                if (success && imageUri != null) {
-                    try {
-                        imageView.setImageURI(imageUri)
-                    } catch (e: Exception) {
-                        Log.e("CameraDebug", "Error displaying image: ${e.message}", e)
-                        Toast.makeText(this, getString(R.string.image_display_error), Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-    }
-
-    private fun checkPermissionsAndShowSourceDialog() {
-        Log.d("PermissionDebug", "Checking permissions")
-
-        val hasStoragePermission =
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                true // Android 10+ için farklı bir yapı kullanılacak
+            if (cameraPermissionGranted && storagePermissionGranted) {
+                showImageSourceOptionsDialog()
             } else {
-                ContextCompat.checkSelfPermission(
-                    this, Manifest.permission.READ_EXTERNAL_STORAGE
-                ) == PackageManager.PERMISSION_GRANTED
+                Toast.makeText(
+                    this,
+                    getString(R.string.permissions_required),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
+        }
 
-        val hasCameraPermission = ContextCompat.checkSelfPermission(
-            this, Manifest.permission.CAMERA
-        ) == PackageManager.PERMISSION_GRANTED
+    // Galeri launcher - Scoped Storage uyumlu
+    galleryLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            Log.d("GalleryDebug", "Gallery result URI: $uri")
+            uri?.let {
+                try {
+                    // URI'ye kalıcı izin ver (Android 10+)
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                        try {
+                            contentResolver.takePersistableUriPermission(
+                                uri,
+                                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            )
+                        } catch (e: SecurityException) {
+                            Log.w("GalleryDebug", "Could not take persistable permission: ${e.message}")
+                            // Kalıcı izin alınamasa bile devam et
+                        }
+                    }
 
-        Log.d("PermissionDebug", "Storage permission: $hasStoragePermission")
-        Log.d("PermissionDebug", "Camera permission: $hasCameraPermission")
+                    // Seçilen resmi uygulama depolamasına kopyala
+                    val savedUri = saveImageToInternalStorage(uri)
+                    savedUri?.let {
+                        imageUri = savedUri
+                        imageView.setImageURI(savedUri)
+                        Log.d("GalleryDebug", "Image saved to: $savedUri")
+                    } ?: run {
+                        Toast.makeText(this, getString(R.string.image_save_failed), Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Log.e("GalleryDebug", "Error with image: ${e.message}", e)
+                    Toast.makeText(this, getString(R.string.image_process_error), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
 
-        if (hasStoragePermission && hasCameraPermission) {
-            // İzinler tamam, seçenekleri göster
-            showImageSourceOptionsDialog()
-        } else {
-            // İzinler eksik, mantığını açıkla ve iste
-            requestPermissions()
+    // Kamera launcher - FileProvider uyumlu
+    cameraLauncher =
+        registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            Log.d("CameraDebug", "Camera result success: $success, URI: $imageUri")
+            if (success && imageUri != null) {
+                try {
+                    imageView.setImageURI(imageUri)
+                } catch (e: Exception) {
+                    Log.e("CameraDebug", "Error displaying image: ${e.message}", e)
+                    Toast.makeText(this, getString(R.string.image_display_error), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+}
+
+private fun checkPermissionsAndShowSourceDialog() {
+    Log.d("PermissionDebug", "Checking permissions for API ${android.os.Build.VERSION.SDK_INT}")
+
+    // API seviyesine göre storage izni kontrolü
+    val hasStoragePermission = when {
+        android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU -> {
+            ContextCompat.checkSelfPermission(
+                this, Manifest.permission.READ_MEDIA_IMAGES
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+        android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q -> {
+            ContextCompat.checkSelfPermission(
+                this, Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+        else -> {
+            ContextCompat.checkSelfPermission(
+                this, Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(
+                this, Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
         }
     }
+
+    val hasCameraPermission = ContextCompat.checkSelfPermission(
+        this, Manifest.permission.CAMERA
+    ) == PackageManager.PERMISSION_GRANTED
+
+    Log.d("PermissionDebug", "Storage permission: $hasStoragePermission")
+    Log.d("PermissionDebug", "Camera permission: $hasCameraPermission")
+
+    if (hasStoragePermission && hasCameraPermission) {
+        showImageSourceOptionsDialog()
+    } else {
+        requestPermissions()
+    }
+}
+
 
     private fun shouldShowPermissionRationale(): Boolean {
         return ActivityCompat.shouldShowRequestPermissionRationale(
@@ -248,9 +291,9 @@ class AddContactActivity : BaseActivity() {
     }
 
     private fun requestPermissions() {
-        Log.d("PermissionDebug", "Requesting permissions")
-        permissionLauncher.launch(REQUIRED_PERMISSIONS)
-    }
+    Log.d("PermissionDebug", "Requesting permissions: ${REQUIRED_PERMISSIONS.joinToString()}")
+    permissionLauncher.launch(REQUIRED_PERMISSIONS)
+}
 
     private fun createPhotoFile(): File {
         // Zaman damgası içeren benzersiz bir dosya adı oluştur
